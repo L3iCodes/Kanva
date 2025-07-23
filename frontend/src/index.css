@@ -21,10 +21,14 @@
   @apply flex flex-row mx-[10px] my-[10px] h-[calc(100vh-20px)] overflow-hidden relative ;
 }
 
+.pageWrapper {
+  @apply flex flex-col gap-2 w-full p-5 overflow-y-auto
+}
+
 .icon {
   @apply w-7 h-fit p-1 rounded-[5px] cursor-pointer hover:bg-accent   ;
 }
 
 p{
-  @apply text-[12px] md:text-[14px]
+  @apply text-[12px]
 }
