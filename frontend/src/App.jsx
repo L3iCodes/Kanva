@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import BoardListPage from './web-pages/BoardListPage'
+import KanbanPage from './web-pages/KanbanPage'
 
 function App() {
   return(
@@ -12,6 +13,7 @@ function App() {
         <Header />
         <Routes>
           <Route path='/' element={<BoardListPage />} />
+          <Route path='/kanban/:id' element={<KanbanPage />}/>
         </Routes>
       </div>
       
