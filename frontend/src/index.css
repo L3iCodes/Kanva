@@ -8,13 +8,13 @@
 @theme {  
   --color-primary: #E6F7FF;
   --color-secondary: #222222;
-  --color-accent: #0D8BF2;
+  --color-accent: #2194ff;
 }
 
 [data-theme='dark'] {
   --color-primary: #222222;
   --color-secondary: #E6F7FF;
-  --color-accent: #0D8BF2;
+  --color-accent: #2194ff;
 }
 
 .wrapper {
@@ -30,5 +30,5 @@
 }
 
 p{
-  @apply text-[12px]
+  @apply text-[12px] md:text-[14px]
 }

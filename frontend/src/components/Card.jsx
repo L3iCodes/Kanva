@@ -1,4 +1,5 @@
 import ProgressBar from "./ProgressBar";
+import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 
 export default function Card({ title, description, className, showProgressBar = false, onClick}){
     return(
@@ -26,4 +27,29 @@ export function LoadingCard({ length }){
     ));
 
     return <>{loadingCard}</>;
+}
+
+
+export function TaskCard({ title, subTaskNum, className}){
+    return(
+        <>
+            <div 
+                className={`${className} flex gap-3 flex-col h-[200px] bg-secondary rounded-[10px] text-primary p-3
+                            md:h-[250px]`}
+            >
+                <p className="line-clamp-2">{title}</p>
+                
+                {subTaskNum && (
+                    <div className="flex items-center gap-2 w-full px-2 rounded-[5px] cursor-pointer hover:bg-primary/10">
+                        <CircleChevronRight className="w-[14px]" />
+                        <p className="text-[8px]">{subTaskNum} subtasks</p>
+                    </div>
+                )}
+
+
+                
+
+            </div>
+        </>
+    )
 }

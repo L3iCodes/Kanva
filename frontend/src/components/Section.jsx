@@ -1,24 +1,29 @@
 import Card from "./Card"
-
+import { Plus, Ellipsis } from 'lucide-react'
+ 
 export default function Section( {title, taskNum, children}){
     return(
         <>
-            <div className="flex flex-col gap-3 w-fit h-fit">
-                <div 
-                    className="flex w-full bg-secondary p-3 text-primary rounded-[10px] relative"
-                >
-                    <h1 className="sticky top-0 left-0">{title}</h1>
-                    {/* Display number of tasks */}
-                    <div 
-                        className="flex flex-col items-center justify-center h-full bg-accent absolute top-0 right-0 p-3 rounded-r-[10px] "
-                    >
-                        <p className="font-bold">tasks</p>
-                        <p>{taskNum}</p>
+            <div className="flex flex-col w-fit h-full bg-secondary/30 rounded-[5px] p-1 text-primary">
+                <div className="flex gap-2 items-center">
+                    <p className="px-2 m-1 bg-secondary rounded-[5px]">{title}</p>
+                    <p className="text-secondary/80">{taskNum}</p>
+                    <div className="flex ml-auto gap-2">
+                        <Ellipsis 
+                            className="h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer
+                                        hover:bg-secondary/10"/>
+                        <Plus 
+                            className="h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer 
+                                        hover:bg-secondary/10"/> 
                     </div>
+                    
                 </div>
 
                 {/* Cards */}
-                {children}
+                <div className="flex flex-col h-full gap-2 overflow-y-auto">
+                    {children}
+                </div>
+                
             </div>
         </>
     )

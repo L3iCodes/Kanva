@@ -116,7 +116,7 @@ export default function KanbanPage(){
         
     return(
         <>
-            <div className="pageWrapper h-full text-secondary">
+            <div className="pageWrapper !h-full text-secondary !overflow-hidden">
                 <Board details={sampleData} />
             </div>
         </>
