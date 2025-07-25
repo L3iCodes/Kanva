@@ -1,60 +1,103 @@
 import Section from "./Section"
-import { TaskCard } from "./Card"
+import Card, { TaskCard, SubTaskCard } from "./Card"
 
-import { Plus } from "lucide-react"
+import { Plus, Check } from "lucide-react"
 import { useState } from "react"
 
 export default function Board({ details }){
-    const [addBtnOpen, setAddBtnOpen] = useState(false)
-    const handleAddBtn = () => setAddBtnOpen(state => !state)
+    const [sections, setSections] = useState(details.sections);
+    
+    // Handles section adding
+    const [addSection, setAddSection] = useState(false)
+    const handleAddSection = () => setAddSection(state => !state)
+    const [newSection, setNewSection] = useState(null)
+    
+    // Function for adding main task
+    const addMainTask = (sectionName, newTaskName, position) => {
+        const newTask = {
+            task_name: newTaskName,
+            checklist: []
+        };
+
+        setSections(prev => ({
+            ...prev,
+            [sectionName]: position === 'start'
+                ? [newTask, ...prev[sectionName]]
+                : [...prev[sectionName], newTask]
+        }))
+    };
+
+    // Function for adding new section
+    const addNewSection = () => {
+        setSections(prev => ({
+            ...prev,
+            [newSection]: []
+        }))
+
+        setNewSection('')
+        setAddSection(false)
+    }
 
     return(
         <>
-            <div className="flex flex-col gap-3 h-full w-full" >
-                <div className="flex flex-col gap-2 w-full min-h-[100px]">
-                    <h1 className="text-3xl font-bold">{details.title}</h1>
-                    <p>{details.desc}</p>
+            <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
+                <div className="flex flex-col gap-2 w-full sticky left-0">
+                    <h1 className="text-2xl font-bold">{details.title}</h1>
+                    
                 </div>
-                {/* <div>
-                    <div className="flex items-center gap-2 absolute z-10 bottom-5 right-5 text-primary
-                                    md:relative md:bottom-0 md:right-0 md:border-b-2 md:border-t-2 border-accent/30">
-                        <Plus
-                            onClick={handleAddBtn} 
-                            className={`bg-accent w-[60px] h-fit rounded-full p-1 border-3 border-primary cursor-pointer md:w-[50px]`}/>
-                       
-                        <button 
-                            className={`w-[110px] py-1 bg-accent absolute bottom-10 right-18 rounded-[5px] border-2 border-primary cursor-pointer
-                                        md:relative md:right-0 md:bottom-0
-                                        transition-all duration-300 ease-in
-                                        ${addBtnOpen ? 'translate-x-0' : 'translate-x-10 opacity-0 md:translate-x-[-20px]'}`}
-                            >Add Task
-                        </button>
-                        
-                        <button 
-                            className={`w-[110px] py-1 bg-accent absolute bottom-0 right-18 rounded-[5px] border-2 border-primary cursor-pointer
-                                        md:relative md:right-0
-                                        transition-all duration-300 ease-in
-                                        ${addBtnOpen ? ' translate-x-0' : 'translate-x-10 opacity-0 md:translate-x-[-20px]'}`}
-                            >Add Section
-                        </button>
-                       
-                    </div>
-                </div> */}
 
                 <div className="flex flex-row justify-baseline gap-4 mt-2 h-full">
-                    <Section 
-                        title='TO-DO'
-                        taskNum={3}
-                    >
-                        <TaskCard 
-                            title={"Create the UI and Prototype of the Website then Lorem ipsum, dolor sit amet consectetur adipisicing elit.  "}
-                            className={'!h-fit !w-[250px]'}
-                            subTaskNum={10}
+                    
+                    {Object.entries(sections).map(([section, value]) => (
+                        <Section 
+                                key={section} 
+                                section={section} 
+                                taskNum={value.length}
+                                onAddTask={addMainTask}
+                                onAddSection={addNewSection} 
+                        >
+                            {value.map((mainTask, index) => (
+                                <TaskCard
+                                    key={index} 
+                                    title={mainTask.task_name}
+                                    className={'!h-fit !w-[250px]'}
+                                    subTaskNum={mainTask.checklist.length}
+                                    subTask={mainTask.checklist}
+                                />
+                            ))}
+                        </Section>
+                    ))}
+                    
+                    <div className="flex flex-col gap-3 text-[12px]">
+                        <Card
+                            onClick={handleAddSection}
+                            className={`!h-fit w-[250px] items-start !bg-accent/50 text-secondary/80 !rounded-[5px] !p-1 cursor-pointer
+                                        hover:!bg-accent/100`} 
+                            description={'+ Section'}
                         />
 
+                        {addSection && (
+                            <div className="flex items-center gap-2 border-accent border-2 p-1 rounded-[5px]">
+                                <input 
+                                    type="text" 
+                                    placeholder="Task Name"
+                                    className="w-full"
+                                    value={newSection}
+                                    onChange={(e) => {
+                                        setNewSection(e.target.value)
+                                    }}
+                                />
+                                {newSection && (
+                                    <Check 
+                                        onClick={addNewSection}
+                                        className="w-[30px] p-1 hover:bg-accent rounded-[5px] cursor-pointer"/>
+                                )}
+                            </div>
+                        )}
                         
-                    </Section>
-
+                        
+                    </div>
+                     
                 </div>
             </div>
         </>

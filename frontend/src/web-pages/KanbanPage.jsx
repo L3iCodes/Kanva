@@ -10,7 +10,7 @@ const sampleData = {
       {
         task_name: 'Research and Planning',
         checklist: [
-          { sub_task: 'Gather requirements', done: false  },
+          { sub_task: 'Gather requirements', done: true  },
           { sub_task: 'Analyze competitors', done: false  }
         ]
       },
@@ -100,23 +100,10 @@ const sampleData = {
 };
 
 export default function KanbanPage(){
-    
-    Object.entries(sampleData.sections).map(([section, main_tasks]) => {
-        console.log(`SECTION: ${section}`);
-
-        main_tasks.map(task => {
-            console.log(`  Task: ${task.task_name}`);
-
-            task.checklist.map((subtask) => {
-                console.log(`       SubTask: ${subtask.sub_task}`)
-            })
-        })
-        
-    });
-        
+            
     return(
         <>
-            <div className="pageWrapper !h-full text-secondary !overflow-hidden">
+            <div className="pageWrapper !h-full !w-full text-secondary">
                 <Board details={sampleData} />
             </div>
         </>

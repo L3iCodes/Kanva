@@ -9,7 +9,7 @@ function App() {
     <Router>
       <div className='wrapper'>
       <Navbar />
-      <div className='flex flex-col w-full h-full'>
+      <div className='flex flex-col w-full h-full overflow-hidden'>
         <Header />
         <Routes>
           <Route path='/' element={<BoardListPage />} />
