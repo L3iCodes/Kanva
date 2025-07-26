@@ -38,6 +38,27 @@ export default function Board({ details }){
         setAddSection(false)
     }
 
+    // Function for moving task to other section
+    const moveTask = (currSection, indexOfTask, receivingSection) =>{
+        setSections(prev => {
+            // Copy section
+            const updated = {...prev};
+
+            // Get task
+            const taskToMove = updated[currSection][indexOfTask];
+
+            if(!taskToMove) return prev;
+
+            // Move task to receiving section
+            updated[receivingSection] = [...updated[receivingSection], taskToMove]
+
+            // Delete task from current section
+            updated[currSection] = updated[currSection].filter((_,index) => index !== indexOfTask)
+
+            return updated
+        })
+    }
+
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
@@ -58,11 +79,15 @@ export default function Board({ details }){
                         >
                             {value.map((mainTask, index) => (
                                 <TaskCard
-                                    key={index} 
+                                    key={index}
+                                    taskIndex={index} 
                                     title={mainTask.task_name}
                                     className={'!h-fit !w-[250px]'}
                                     subTaskNum={mainTask.checklist.length}
                                     subTask={mainTask.checklist}
+                                    sections={Object.keys(sections)}
+                                    current_section={section}
+                                    onMoveTask={moveTask}
                                 />
                             ))}
                         </Section>

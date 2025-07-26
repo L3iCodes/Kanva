@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
+import { TaskCardMenu } from "./Menus";
 
 export default function Card({ title, description, className, showProgressBar = false, onClick}){
     return(
@@ -30,19 +31,42 @@ export function LoadingCard({ length }){
     return <>{loadingCard}</>;
 }
 
-
-export function TaskCard({ title, subTaskNum, subTask, className}){
+export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, current_section, onMoveTask, className}){
+    
+    // Sub task toggle control
     const [showSubTask, setShowSubTask] = useState(false)
     const handleSubTask = () => setShowSubTask(state => !state)
     const hasSubTasks = Array.isArray(subTask) && subTask.length > 0;
+
+    // Task menu
+    const [taskMenuOpen, setTaskMenuOpen] = useState(false)
+    const [moveMenu, setMoveMenu] = useState(false)
+
+    // Move Task function
+    const moveTask = (targetSection) => {
+        onMoveTask(current_section, taskIndex, targetSection);
+        setMoveMenu(false);
+    }
     
     return(
         <>
             <div className={`${className} flex flex-col gap-1`}>
-                <div 
-                className={`flex gap-3 flex-col bg-primary/70 rounded-[10px] text-secondary p-3
-                            `}
+                <div
+                    onMouseEnter={()=>setTaskMenuOpen(true)}
+                    onMouseLeave={()=>(setTaskMenuOpen(false), setMoveMenu(false))} 
+                    className={`flex gap-3 flex-col bg-primary/70 rounded-[10px] text-secondary p-3 relative
+                                `}
                 >
+                    {taskMenuOpen && (
+                        <TaskCardMenu 
+                            sections={sections} 
+                            current_section={current_section}
+                            moveMenuOpen={moveMenu}
+                            onOpenMoveMenu={() => setMoveMenu(state => !state)} 
+                            onMoveTask={moveTask}
+                        />
+                    )}
+                    
                     <p className="line-clamp-2">{title}</p>
                     
                     {hasSubTasks && (
