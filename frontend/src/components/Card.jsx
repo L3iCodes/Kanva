@@ -31,7 +31,7 @@ export function LoadingCard({ length }){
     return <>{loadingCard}</>;
 }
 
-export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, current_section, onMoveTask, className}){
+export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, current_section, onMoveTask, onDeleteTask, className}){
     
     // Sub task toggle control
     const [showSubTask, setShowSubTask] = useState(false)
@@ -46,6 +46,10 @@ export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, curr
     const moveTask = (targetSection) => {
         onMoveTask(current_section, taskIndex, targetSection);
         setMoveMenu(false);
+    }
+
+    const deleteTask = (targetSection) => {
+        onDeleteTask(targetSection, taskIndex)
     }
     
     return(
@@ -64,6 +68,7 @@ export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, curr
                             moveMenuOpen={moveMenu}
                             onOpenMoveMenu={() => setMoveMenu(state => !state)} 
                             onMoveTask={moveTask}
+                            onDeleteTask={deleteTask}
                         />
                     )}
                     

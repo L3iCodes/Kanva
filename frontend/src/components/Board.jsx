@@ -59,6 +59,39 @@ export default function Board({ details }){
         })
     }
 
+    // Function for deleting task
+    const deleteTask = (section, taskIndex) => {
+        setSections(prev => {
+            const updated_section = prev[section].filter((_, index) => index !== taskIndex)
+
+            return{
+                ...prev, 
+                [section]: updated_section
+            };
+        });
+    };
+
+    // Function for renaming section
+    const renameSection = (oldName, newName) => {
+        setSections(prev => {
+            const updatedSection = {...prev};
+
+            updatedSection[newName] = updatedSection[oldName];
+            delete updatedSection[oldName];
+
+            return updatedSection;
+        })
+    }
+
+    // Function for deleting section
+    const deleteSection = (target) => {
+        setSections(prev => {
+            const updatedSection = {...prev}
+            const filteredEntries = Object.entries(updatedSection).filter(([section]) => section !== target)
+            return Object.fromEntries(filteredEntries); //Convert back to object since 'filteredEntries` is an array
+        })
+    }
+
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
@@ -75,7 +108,9 @@ export default function Board({ details }){
                                 section={section} 
                                 taskNum={value.length}
                                 onAddTask={addMainTask}
-                                onAddSection={addNewSection} 
+                                onAddSection={addNewSection}
+                                onRename={renameSection} 
+                                onDelete={deleteSection}
                         >
                             {value.map((mainTask, index) => (
                                 <TaskCard
@@ -88,6 +123,7 @@ export default function Board({ details }){
                                     sections={Object.keys(sections)}
                                     current_section={section}
                                     onMoveTask={moveTask}
+                                    onDeleteTask={deleteTask}
                                 />
                             ))}
                         </Section>
