@@ -31,7 +31,7 @@ export function LoadingCard({ length }){
     return <>{loadingCard}</>;
 }
 
-export function TaskCard({ section_index, task_index, task_details, section_list, dispatch, className}){
+export function TaskCard({ section_index, task_index, task_details, section_list, dispatch, onTaskDetail, className}){
     
     // Sub task toggle control
     const [toggleCheckList, setToggleCheckList] = useState(false)
@@ -65,10 +65,11 @@ export function TaskCard({ section_index, task_index, task_details, section_list
         <>
             <div className={`${className} flex flex-col gap-1`}>
                 <div
+                    onClick={onTaskDetail}
                     onMouseEnter={()=>setToggleTaskMenu(true)}
                     onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))} 
-                    className={`flex gap-3 flex-col bg-primary/70 rounded-[10px] text-secondary p-3 relative
-                                `}
+                    className={`flex gap-3 flex-col bg-primary/80 rounded-[10px] text-secondary p-3 relative cursor-pointer
+                                hover:border-1 border-accent`}
                 >
                     {toggleTaskMenu && (
                         <TaskCardMenu 
@@ -110,7 +111,7 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                     {task_details.checklist.length > 0 && (
                         <div 
                             onClick={() => setToggleCheckList(state => !state)}
-                            className="flex items-center gap-2 w-full px-2 rounded-[5px] cursor-pointer hover:bg-primary/10"
+                            className="flex items-center gap-2 w-full px-2 rounded-[5px] cursor-pointer hover:bg-secondary/10"
                         >
                             <CircleChevronRight className="w-[14px]" />
                             <p className="text-[8px]">{task_details.checklist.length} subtasks</p>

@@ -1,17 +1,31 @@
 import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
+import TaskDetail from "./TaskDetail"
 
 import { Plus, Check } from "lucide-react"
 import { useRef, useState } from "react"
 
 export default function Board({ board, dispatch }){
+    // Add Section Toggle
     const [toggleAddSection, setToggleAddSection] = useState(false)
     const [newSection, setNewSection] = useState('')
     const newSectionRef = useRef(null)
+    
+    // Open Task Detail Modal
+    const [taskDetail, setTaskDetail] = useState({})
+    const [openTaskDetail, setOpenTaskDetail] = useState(false)
+
+
 
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
+                {openTaskDetail && taskDetail && (
+                    <TaskDetail 
+                        task_detail={taskDetail}
+                        onTaskDetail={()=>setOpenTaskDetail(state => !state)}
+                    />)}
+                
                 <div className="flex flex-col gap-2 w-full sticky left-0">
                     <h1 className="text-2xl font-bold">{board.title}</h1>
                     
@@ -35,6 +49,10 @@ export default function Board({ board, dispatch }){
                                     task_details={task}
                                     section_list={board.sections.map(section => section.name)}
                                     className={'w-[250px]'}
+                                    onTaskDetail={() => {
+                                        setOpenTaskDetail(state => !state);
+                                        setTaskDetail(task)
+                                    }}
                                     dispatch={dispatch}
                                 />
                             ))}
