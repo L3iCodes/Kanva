@@ -1,13 +1,13 @@
 import { PanelLeftClose, Pen, Trash, X, SendToBack } from 'lucide-react'
 import { useState } from 'react'
 
-export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleSection} ){
+export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleToggleSection} ){
     return(
         <div className="flex flex-col gap-2 items-start absolute right-[-140px] z-10 top-8 w-[200px] p-2 bg-primary rounded-[5px] shadow-lg shadow-secondary/50 text-secondary text-[12px]">
             <button 
                 onClick={() => {
                     onCollapse();
-                    onHandleSection();
+                    onHandleToggleSection();
                     }}
                 className="flex items-center gap-2 hover:bg-accent/70 w-full rounded-[5px] px-1 cursor-pointer"
             >
@@ -32,32 +32,42 @@ export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleSe
     )
 }
 
-export function TaskCardMenu({ sections, current_section, moveMenuOpen, onOpenMoveMenu, onMoveTask, onDeleteTask }){
-
+export function TaskCardMenu({ section_list, task_index, current_section, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, dispatch }){
+    
     return(
         <div className='flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
             <div title='Delete Task'>
                 <X 
-                    onClick={() => onDeleteTask(current_section)}
+                    onClick={()=>{
+                        dispatch({
+                            type: 'DELETE_TASK',
+                            payload: {section_index: current_section, task_index:task_index}
+                        })
+                    }}
                     className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'
                 />
             </div>
             <div title='Rename Task'>
-                <Pen className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'/>
+                <Pen 
+                    onClick={onToggleRename}
+                    className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'
+                />
             </div>
             <div className={'flex relative'} title='Move Task'>
                 <SendToBack
-                    onClick={onOpenMoveMenu} 
+                    onClick={onToggleMoveMenu} 
                     className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'/>
                 
-                {moveMenuOpen && (
+                {toggleMoveMenu && (
                     <div className='flex flex-col gap-1 w-[100px] bg-primary top-6 right-[-3px] rounded-[5px] p-2 absolute shadow-lg shadow-secondary/50 z-10'>
-                        {sections.map((element) => (
+                        {section_list.map((element, index) => (
                             <button
-                                onClick={() => onMoveTask(element)}
+                                onClick={() => {
+                                    onMoveTask(index)
+                                }}
                                 key={`move-${element}`} 
                                 className={`flex items-center gap-2 hover:bg-accent/70 w-full rounded-[5px] cursor-pointer text-[12px] px-1 truncate
-                                            ${current_section === element && ('font-bold')}`}
+                                            ${section_list[current_section] === element && ('font-bold')}`}
                             
                                 >{element}
                             </button>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 import { TaskCardMenu } from "./Menus";
@@ -31,63 +31,96 @@ export function LoadingCard({ length }){
     return <>{loadingCard}</>;
 }
 
-export function TaskCard({ taskIndex, title, subTaskNum, subTask, sections, current_section, onMoveTask, onDeleteTask, className}){
+export function TaskCard({ section_index, task_index, task_details, section_list, dispatch, className}){
     
     // Sub task toggle control
-    const [showSubTask, setShowSubTask] = useState(false)
-    const handleSubTask = () => setShowSubTask(state => !state)
-    const hasSubTasks = Array.isArray(subTask) && subTask.length > 0;
+    const [toggleCheckList, setToggleCheckList] = useState(false)
 
     // Task menu
-    const [taskMenuOpen, setTaskMenuOpen] = useState(false)
-    const [moveMenu, setMoveMenu] = useState(false)
+    const [toggleTaskMenu, setToggleTaskMenu] = useState(false)
+    const [toggleMoveMenu, setToggleMoveMenu] = useState(false)
 
-    // Move Task function
-    const moveTask = (targetSection) => {
-        onMoveTask(current_section, taskIndex, targetSection);
-        setMoveMenu(false);
+    // Task Names
+    const [taskName, setTaskName] = useState(task_details.task_name)
+    const [disableChangeName, setDisableChangeName] = useState(true)
+    const taskNameRef = useRef(null)
+
+    const toggleRename = () => {
+        setDisableChangeName(false);
+
+        setTimeout(() => {
+            taskNameRef.current?.focus();
+            taskNameRef.current?.select();
+        }, 0)
     }
 
-    const deleteTask = (targetSection) => {
-        onDeleteTask(targetSection, taskIndex)
-    }
-    
+    const moveTask = (target) => {
+        dispatch({
+            type: 'MOVE_TASK',
+            payload: {section_index:section_index, task_index:task_index, target_section:target}
+        })
+    }    
+
     return(
         <>
             <div className={`${className} flex flex-col gap-1`}>
                 <div
-                    onMouseEnter={()=>setTaskMenuOpen(true)}
-                    onMouseLeave={()=>(setTaskMenuOpen(false), setMoveMenu(false))} 
+                    onMouseEnter={()=>setToggleTaskMenu(true)}
+                    onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))} 
                     className={`flex gap-3 flex-col bg-primary/70 rounded-[10px] text-secondary p-3 relative
                                 `}
                 >
-                    {taskMenuOpen && (
+                    {toggleTaskMenu && (
                         <TaskCardMenu 
-                            sections={sections} 
-                            current_section={current_section}
-                            moveMenuOpen={moveMenu}
-                            onOpenMoveMenu={() => setMoveMenu(state => !state)} 
+                            section_list={section_list} 
+                            task_index={task_index} 
+                            current_section={section_index}
+                            toggleMoveMenu = {toggleMoveMenu}
+                            onToggleMoveMenu={() => setToggleMoveMenu(state => !state)}
+                            onToggleRename={toggleRename}
                             onMoveTask={moveTask}
-                            onDeleteTask={deleteTask}
+                            dispatch={dispatch}
                         />
                     )}
                     
-                    <p className="line-clamp-2">{title}</p>
+                    <textarea 
+                        className="line-clamp-2 text-[12px] overflow-hidden resize-none" 
+                        ref={taskNameRef}
+                        disabled={disableChangeName}
+                        value={taskName}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter'){
+                                e.preventDefault();
+                                
+                                dispatch({
+                                    type: 'RENAME_TASK',
+                                    payload: {section_index:section_index, task_index:task_index, newName:taskName}
+                                })
+
+                                setDisableChangeName(true)
+                                
+                                if (taskNameRef.current) {
+                                    taskNameRef.current.scrollTop = 0;
+                                }
+                            }
+                        }}
+                    />
                     
-                    {hasSubTasks && (
+                    {task_details.checklist.length > 0 && (
                         <div 
-                            onClick={handleSubTask}
+                            onClick={() => setToggleCheckList(state => !state)}
                             className="flex items-center gap-2 w-full px-2 rounded-[5px] cursor-pointer hover:bg-primary/10"
                         >
                             <CircleChevronRight className="w-[14px]" />
-                            <p className="text-[8px]">{subTaskNum} subtasks</p>
+                            <p className="text-[8px]">{task_details.checklist.length} subtasks</p>
                         </div>
                     )}
                 </div>
 
-                {hasSubTasks && showSubTask && (
+                {task_details.checklist.length > 0 && toggleCheckList && (
                     <div className={`flex flex-col gap-2`}>
-                        {subTask.map((checklist, index) => (
+                        {task_details.checklist.map((checklist, index) => (
                             
                             <SubTaskCard 
                                 key={index}

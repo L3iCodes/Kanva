@@ -2,155 +2,95 @@ import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
 
 import { Plus, Check } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 
-export default function Board({ details }){
-    const [sections, setSections] = useState(details.sections);
-    
-    // Handles section adding
-    const [addSection, setAddSection] = useState(false)
-    const handleAddSection = () => setAddSection(state => !state)
-    const [newSection, setNewSection] = useState(null)
-    
-    // Function for adding main task
-    const addMainTask = (sectionName, newTaskName, position) => {
-        const newTask = {
-            task_name: newTaskName,
-            checklist: []
-        };
-
-        setSections(prev => ({
-            ...prev,
-            [sectionName]: position === 'start'
-                ? [newTask, ...prev[sectionName]]
-                : [...prev[sectionName], newTask]
-        }))
-    };
-
-    // Function for adding new section
-    const addNewSection = () => {
-        setSections(prev => ({
-            ...prev,
-            [newSection]: []
-        }))
-
-        setNewSection('')
-        setAddSection(false)
-    }
-
-    // Function for moving task to other section
-    const moveTask = (currSection, indexOfTask, receivingSection) =>{
-        setSections(prev => {
-            // Copy section
-            const updated = {...prev};
-
-            // Get task
-            const taskToMove = updated[currSection][indexOfTask];
-
-            if(!taskToMove) return prev;
-
-            // Move task to receiving section
-            updated[receivingSection] = [...updated[receivingSection], taskToMove]
-
-            // Delete task from current section
-            updated[currSection] = updated[currSection].filter((_,index) => index !== indexOfTask)
-
-            return updated
-        })
-    }
-
-    // Function for deleting task
-    const deleteTask = (section, taskIndex) => {
-        setSections(prev => {
-            const updated_section = prev[section].filter((_, index) => index !== taskIndex)
-
-            return{
-                ...prev, 
-                [section]: updated_section
-            };
-        });
-    };
-
-    // Function for renaming section
-    const renameSection = (oldName, newName) => {
-        setSections(prev => {
-            const updatedSection = {...prev};
-
-            updatedSection[newName] = updatedSection[oldName];
-            delete updatedSection[oldName];
-
-            return updatedSection;
-        })
-    }
-
-    // Function for deleting section
-    const deleteSection = (target) => {
-        setSections(prev => {
-            const updatedSection = {...prev}
-            const filteredEntries = Object.entries(updatedSection).filter(([section]) => section !== target)
-            return Object.fromEntries(filteredEntries); //Convert back to object since 'filteredEntries` is an array
-        })
-    }
+export default function Board({ board, dispatch }){
+    const [toggleAddSection, setToggleAddSection] = useState(false)
+    const [newSection, setNewSection] = useState('')
+    const newSectionRef = useRef(null)
 
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
                 <div className="flex flex-col gap-2 w-full sticky left-0">
-                    <h1 className="text-2xl font-bold">{details.title}</h1>
+                    <h1 className="text-2xl font-bold">{board.title}</h1>
                     
                 </div>
 
                 <div className="flex flex-row justify-baseline gap-4 mt-2 h-full">
                     
-                    {Object.entries(sections).map(([section, value]) => (
-                        <Section 
-                                key={section} 
-                                section={section} 
-                                taskNum={value.length}
-                                onAddTask={addMainTask}
-                                onAddSection={addNewSection}
-                                onRename={renameSection} 
-                                onDelete={deleteSection}
+                    {board.sections.map((section, section_index) => (
+                        <Section
+                            key={`section-${section.name}`}
+                            section_index={section_index}
+                            section_name={section.name}
+                            totalTask={section.tasks.length}
+                            dispatch={dispatch}
                         >
-                            {value.map((mainTask, index) => (
-                                <TaskCard
-                                    key={index}
-                                    taskIndex={index} 
-                                    title={mainTask.task_name}
-                                    className={'!h-fit !w-[250px]'}
-                                    subTaskNum={mainTask.checklist.length}
-                                    subTask={mainTask.checklist}
-                                    sections={Object.keys(sections)}
-                                    current_section={section}
-                                    onMoveTask={moveTask}
-                                    onDeleteTask={deleteTask}
+                            {section.tasks.map((task, task_index) => (
+                                <TaskCard 
+                                    key={`${section.name}-${task.task_name}-${task_index}`}
+                                    section_index={section_index}
+                                    task_index={task_index}
+                                    task_details={task}
+                                    section_list={board.sections.map(section => section.name)}
+                                    className={'w-[250px]'}
+                                    dispatch={dispatch}
                                 />
                             ))}
+                            
                         </Section>
                     ))}
-                    
+
+
                     <div className="flex flex-col gap-3 text-[12px]">
                         <Card
-                            onClick={handleAddSection}
+                            onClick={() => {
+                                setToggleAddSection(state => !state)
+                                setNewSection('')
+
+                                setTimeout(() => {
+                                    newSectionRef.current?.focus();
+                                    newSectionRef.current?.select();
+                                }, 0)
+                            }}
                             className={`!h-fit w-[250px] items-start !bg-accent/50 text-secondary/80 !rounded-[5px] !p-1 cursor-pointer
                                         hover:!bg-accent/100`} 
                             description={'+ Section'}
                         />
 
-                        {addSection && (
+                        {toggleAddSection && (
                             <div className="flex items-center gap-2 border-accent border-2 p-1 rounded-[5px]">
                                 <input 
-                                    type="text" 
+                                    type="text"
+                                    ref={newSectionRef}
                                     placeholder="Task Name"
                                     className="w-full"
                                     value={newSection}
                                     onChange={(e) => {
                                         setNewSection(e.target.value)
                                     }}
+                                    onKeyDown={(e) => {
+                                        if(e.key === 'Enter'){
+                                            dispatch({
+                                                type: 'ADD_SECTION',
+                                                payload: {name:newSection, position:'start'}
+                                            })
+
+                                            setToggleAddSection(false)
+                                        }
+                                    }}
                                 />
                                 {newSection && (
-                                    <Check 
-                                        onClick={addNewSection}
+                                    <Check
+                                        onClick={()=>{
+                                            dispatch({
+                                                type: 'ADD_SECTION',
+                                                payload: { newSection }
+                                            })
+
+                                            setToggleAddSection(false)
+                                        }} 
                                         className="w-[30px] p-1 hover:bg-accent rounded-[5px] cursor-pointer"/>
                                 )}
                             </div>
