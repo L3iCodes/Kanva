@@ -97,11 +97,11 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                     }
                                 }}
 
-                                className={`px-2 m-1 bg-secondary rounded-[5px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+                                className={`px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
                             />) 
                         : ( <p 
                                 onDoubleClick={toggleRenameSection}
-                                className={`px-2 m-1 bg-secondary rounded-[5px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+                                className={`px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
 
                                 >{sectionName}
                             </p>)
