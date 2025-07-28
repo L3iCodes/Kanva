@@ -211,6 +211,39 @@ export const board_reducer = (state, action) => {
 
         }
 
+        case 'RENAME_SUBTASK': {
+            const {section_index, task_index, subTask_index, newName} = action.payload;
+
+            const updatedSection = [...state.sections];     // Copy the whole section
+            const section = updatedSection[section_index];  // Get specific section
+            const tasks = [...section.tasks];               // Copy list of main tasks
+            const task = tasks[task_index]                  // Copy specific tasks
+
+            const updatedCheckList = [...task.checklist];   // Copy checklist
+            updatedCheckList[subTask_index] = {
+                ...updatedCheckList[subTask_index],
+                sub_task: newName
+            };                                              // Update subtask
+
+            const updatedTask = {
+                ...task,
+                checklist: updatedCheckList,
+            };
+
+            tasks[task_index] = updatedTask;
+
+            updatedSection[section_index] = {               // Update the specific section
+                ...section,                                 // Store copied section
+                tasks                                       // Store modified tasks list
+            }
+
+            return {
+                ...state,
+                sections: updatedSection
+            }
+
+        }
+
         default:
             return state
     }

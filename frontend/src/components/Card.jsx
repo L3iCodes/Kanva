@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 import { TaskCardMenu } from "./Menus";
@@ -164,8 +164,20 @@ export function TaskCard({ section_index, task_index, task_details, section_list
 }
 
 export function SubTaskCard({ title, status, section_index, task_index, enableTaskMenu = false, subTask_index, onClick, className, dispatch}){
-    const [toggleTaskMenu, setToggleTaskMenu] = useState(false)
+    const [toggleTaskMenu, setToggleTaskMenu] = useState(false);
+    const [disableChangeName, setDisableChangeName] = useState(true)
+    const [taskName, setTaskName] = useState(title)
+    const taskNameRef = useRef();
     
+    const toggleRename = () => {
+        setDisableChangeName(false)
+
+        setTimeout(() => {
+            taskNameRef.current?.focus();
+            taskNameRef.current?.select();
+        }, 0)
+    }
+
     const handleStatus = () => {
         dispatch({
             type: 'UPDATE_SUBTASK_STATUS',
@@ -188,18 +200,35 @@ export function SubTaskCard({ title, status, section_index, task_index, enableTa
             }
         })
     }
+
+    const handleRename = () => {
+        dispatch({
+            type: 'RENAME_SUBTASK',
+            payload: {
+                section_index,
+                task_index,
+                subTask_index,
+                newName:taskName,
+            }
+        })
+    }
     
     return(
         <>
             <div 
                 onClick={onClick}
-                onMouseEnter={()=>enableTaskMenu && setToggleTaskMenu(true)}
-                onMouseLeave={()=> enableTaskMenu && setToggleTaskMenu(false)} 
+                onMouseEnter={()=> enableTaskMenu && setToggleTaskMenu(true)}
+                onMouseLeave={()=> {
+                    enableTaskMenu && setToggleTaskMenu(false)
+                    setDisableChangeName(true)
+                    setTaskName(title)
+                }} 
                 className={`${className} flex gap-3 h-fit ml-8 bg-primary/70 rounded-[10px] text-secondary p-3 relative cursor-pointer`}
             >
                 {toggleTaskMenu && (
                     <TaskCardMenu 
                         onRemove={handleDelete}
+                        onToggleRename={toggleRename}
                     />
                 )}
                 
@@ -214,9 +243,39 @@ export function SubTaskCard({ title, status, section_index, task_index, enableTa
                         className="cursor-pointer accent-accent"
                     />
                 )}
-                
 
-                <p className="line-clamp-2">{title}</p> 
+                {!disableChangeName ?  (
+                    <input
+                        type='text' 
+                        className="line-clamp-1 text-[12px] overflow-hidden resize-none" 
+                        ref={taskNameRef}
+                        disabled={disableChangeName}
+                        value={taskName}
+                        onChange={(e) => setTaskName(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter'){
+                                e.preventDefault();
+                                console.log('New name')
+                                
+                                handleRename()
+
+                                setDisableChangeName(true)
+                                
+                                if (taskNameRef.current) {
+                                    taskNameRef.current.scrollTop = 0;
+                                }
+                            }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ):
+                    <p 
+                        onDoubleClick={toggleRename}
+                        className="line-clamp-2">{title}</p>
+                }
+                
+                     
+                
             </div>
         </>
     )

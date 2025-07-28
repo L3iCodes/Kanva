@@ -15,7 +15,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
     const [disableRename, setDisableRename] = useState(true)
     const sectionNameRef = useRef(null)
     
-    const renameSection = () => {
+    const toggleRenameSection = () => {
         setDisableRename(false);
 
         setTimeout(() => {
@@ -52,7 +52,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                 {toggleSectionMenu && (
                     <SectionMenu 
                         onCollapse={() => setCollapse(true)}
-                        onRename={renameSection}
+                        onRename={toggleRenameSection}
                         onDelete={() => {
                             dispatch({
                                 type: 'DELETE_SECTION',
@@ -76,28 +76,37 @@ export default function Section( {section_index, section_name, totalTask, dispat
                         </div>
                     )}
                     
-                    <input 
-                        type='text'
-                        ref={sectionNameRef}
-                        disabled={disableRename}
-                        value={sectionName}
-                        onChange={(e) => setSectionName(e.target.value)}
-                        onKeyDown={(e) => {
-                            if(e.key === 'Enter'){
-                                if(sectionName.trim() === '') return;
+                    {!disableRename 
+                        ? (<input 
+                                type='text'
+                                ref={sectionNameRef}
+                                disabled={disableRename}
+                                value={sectionName}
+                                onChange={(e) => setSectionName(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if(e.key === 'Enter'){
+                                        if(sectionName.trim() === '') return;
 
-                                dispatch({
-                                    type: 'RENAME_SECTION',
-                                    payload: {section_index, newName: sectionName}
-                                })
+                                        dispatch({
+                                            type: 'RENAME_SECTION',
+                                            payload: {section_index, newName: sectionName}
+                                        })
 
-                                setToggleSectionMenu(false)
-                                setDisableRename(true);
-                            }
-                        }}
+                                        setToggleSectionMenu(false)
+                                        setDisableRename(true);
+                                    }
+                                }}
 
-                        className={`px-2 m-1 bg-secondary rounded-[5px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
-                    />
+                                className={`px-2 m-1 bg-secondary rounded-[5px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+                            />) 
+                        : ( <p 
+                                onDoubleClick={toggleRenameSection}
+                                className={`px-2 m-1 bg-secondary rounded-[5px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+
+                                >{sectionName}
+                            </p>)
+                    }
+                    
 
                     <p className={`text-secondary/80 ${collapse && 'mt-9'}`}>{totalTask}</p>
 
