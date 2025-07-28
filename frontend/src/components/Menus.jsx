@@ -38,7 +38,8 @@ export function TaskCardMenu({ section_list, task_index, current_section, toggle
         <div className='flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
             <div title='Delete Task'>
                 <X 
-                    onClick={()=>{
+                    onClick={(e)=>{
+                        e.stopPropagation();
                         dispatch({
                             type: 'DELETE_TASK',
                             payload: {section_index: current_section, task_index:task_index}
@@ -62,7 +63,8 @@ export function TaskCardMenu({ section_list, task_index, current_section, toggle
                     <div className='flex flex-col gap-1 w-[100px] bg-primary top-6 right-[-3px] rounded-[5px] p-2 absolute shadow-lg shadow-secondary/50 z-10'>
                         {section_list.map((element, index) => (
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onMoveTask(index)
                                 }}
                                 key={`move-${element}`} 

@@ -45,7 +45,8 @@ export function TaskCard({ section_index, task_index, task_details, section_list
     const [disableChangeName, setDisableChangeName] = useState(true)
     const taskNameRef = useRef(null)
 
-    const toggleRename = () => {
+    const toggleRename = (e) => {
+        e.stopPropagation();
         setDisableChangeName(false);
 
         setTimeout(() => {
@@ -77,7 +78,10 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                             task_index={task_index} 
                             current_section={section_index}
                             toggleMoveMenu = {toggleMoveMenu}
-                            onToggleMoveMenu={() => setToggleMoveMenu(state => !state)}
+                            onToggleMoveMenu={(e) => {
+                                setToggleMoveMenu(state => !state)
+                                e.stopPropagation()
+                            }}
                             onToggleRename={toggleRename}
                             onMoveTask={moveTask}
                             dispatch={dispatch}
@@ -106,11 +110,15 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                                 }
                             }
                         }}
+                        onClick={(e) => e.stopPropagation()}
                     />
                     
                     {task_details.checklist.length > 0 && (
                         <div 
-                            onClick={() => setToggleCheckList(state => !state)}
+                            onClick={(e) => {
+                                setToggleCheckList(state => !state)
+                                e.stopPropagation()
+                            }}
                             className="flex items-center gap-2 w-full px-2 rounded-[5px] cursor-pointer hover:bg-secondary/10"
                         >
                             <CircleChevronRight className="w-[14px]" />
@@ -125,7 +133,11 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                             
                             <SubTaskCard 
                                 key={index}
+                                section_index={section_index}
+                                task_index={task_index}
+                                subTask_index={index}
                                 title={checklist.sub_task}
+                                dispatch={dispatch}
                                 status={checklist.done}
                             />
                         ))}
@@ -139,17 +151,38 @@ export function TaskCard({ section_index, task_index, task_details, section_list
     )
 }
 
-export function SubTaskCard({ title, status, className}){
+export function SubTaskCard({ title, status, section_index, task_index, subTask_index, onClick, className, dispatch}){
+    const handleStatus = () => {
+        dispatch({
+            type: 'UPDATE_SUBTASK_STATUS',
+            payload: {
+                section_index,
+                task_index,
+                subTask_index,
+                status: !status
+            }
+        })
+    }
+    
     return(
         <>
             <div 
+                onClick={onClick}
                 className={`${className} flex gap-3 h-fit ml-8 bg-primary/70 rounded-[10px] text-secondary p-3`}
             >
-                <input 
-                    type="radio" 
-                    checked={status}
-                    readOnly
-                />
+                {status !== null && (
+                    <input 
+                        onClick={() => {
+                            handleStatus()
+                        }}
+                        type="radio" 
+                        checked={status}
+                        readOnly
+                        className="cursor-pointer accent-accent"
+                    />
+                )}
+                
+
                 <p className="line-clamp-2">{title}</p> 
             </div>
         </>

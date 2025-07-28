@@ -15,14 +15,15 @@ export default function Board({ board, dispatch }){
     const [taskDetail, setTaskDetail] = useState({})
     const [openTaskDetail, setOpenTaskDetail] = useState(false)
 
-
-
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
                 {openTaskDetail && taskDetail && (
                     <TaskDetail 
+                        key={`${taskDetail.section_index}-${taskDetail.task_index}`} 
                         task_detail={taskDetail}
+                        board={board}
+                        dispatch={dispatch}
                         onTaskDetail={()=>setOpenTaskDetail(state => !state)}
                     />)}
                 
@@ -47,11 +48,15 @@ export default function Board({ board, dispatch }){
                                     section_index={section_index}
                                     task_index={task_index}
                                     task_details={task}
+                                    board={board}
                                     section_list={board.sections.map(section => section.name)}
                                     className={'w-[250px]'}
                                     onTaskDetail={() => {
                                         setOpenTaskDetail(state => !state);
-                                        setTaskDetail(task)
+                                        setTaskDetail({
+                                            section_index: section_index,
+                                            task_index: task_index,
+                                        })
                                     }}
                                     dispatch={dispatch}
                                 />
