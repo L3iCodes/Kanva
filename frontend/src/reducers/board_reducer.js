@@ -160,7 +160,6 @@ export const board_reducer = (state, action) => {
             const section = updatedSection[section_index];  // Get specific section
             const tasks = [...section.tasks];               // Copy list of main tasks
             const task = tasks[task_index]                  // Copy specific tasks
-            console.log('TASK '+ JSON.stringify(task))
 
             const updatedCheckList = [...task.checklist];   // Copy checklist
             updatedCheckList[subTask_index] = {
@@ -174,6 +173,35 @@ export const board_reducer = (state, action) => {
             updatedSection[section_index] = {               // Update the specific section
                 ...section,                                 // Store copied section
                 tasks                                       // Store modified tasks list
+            }
+
+            return {
+                ...state,
+                sections: updatedSection
+            }
+
+        }
+
+        case 'DELETE_SUBTASK': {
+            const {section_index, task_index, subTask_index} = action.payload;
+
+            const updatedSection = [...state.sections];     
+            const section = updatedSection[section_index];  
+            const tasks = [...section.tasks];               
+            const task = tasks[task_index]                  
+
+            const updatedCheckList = task.checklist.filter((_,index) => index !== subTask_index);   
+            
+            const updatedTask = {
+                ...task,
+                checklist: updatedCheckList
+            }
+
+            tasks[task_index] = updatedTask     // Update current task
+
+            updatedSection[section_index] = {   // Update Section (tasks)               
+                ...section,                                  
+                tasks                                       
             }
 
             return {

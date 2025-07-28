@@ -90,6 +90,7 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                                 setToggleMoveMenu(state => !state)
                                 e.stopPropagation()
                             }}
+                            enableMoveTask={true}
                             onRemove={removeTask}
                             onToggleRename={toggleRename}
                             onMoveTask={moveTask}
@@ -148,6 +149,8 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                                 title={checklist.sub_task}
                                 dispatch={dispatch}
                                 status={checklist.done}
+                                enableTaskMenu={true}
+                                className={`hover:border-1 border-accent`}
                             />
                         ))}
                     </div>
@@ -160,7 +163,9 @@ export function TaskCard({ section_index, task_index, task_details, section_list
     )
 }
 
-export function SubTaskCard({ title, status, section_index, task_index, subTask_index, onClick, className, dispatch}){
+export function SubTaskCard({ title, status, section_index, task_index, enableTaskMenu = false, subTask_index, onClick, className, dispatch}){
+    const [toggleTaskMenu, setToggleTaskMenu] = useState(false)
+    
     const handleStatus = () => {
         dispatch({
             type: 'UPDATE_SUBTASK_STATUS',
@@ -172,13 +177,32 @@ export function SubTaskCard({ title, status, section_index, task_index, subTask_
             }
         })
     }
+
+    const handleDelete = () => {
+        dispatch({
+            type: 'DELETE_SUBTASK',
+            payload: {
+                section_index,
+                task_index,
+                subTask_index,
+            }
+        })
+    }
     
     return(
         <>
             <div 
                 onClick={onClick}
-                className={`${className} flex gap-3 h-fit ml-8 bg-primary/70 rounded-[10px] text-secondary p-3`}
+                onMouseEnter={()=>enableTaskMenu && setToggleTaskMenu(true)}
+                onMouseLeave={()=> enableTaskMenu && setToggleTaskMenu(false)} 
+                className={`${className} flex gap-3 h-fit ml-8 bg-primary/70 rounded-[10px] text-secondary p-3 relative cursor-pointer`}
             >
+                {toggleTaskMenu && (
+                    <TaskCardMenu 
+                        onRemove={handleDelete}
+                    />
+                )}
+                
                 {status !== null && (
                     <input 
                         onClick={() => {

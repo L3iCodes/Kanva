@@ -32,7 +32,7 @@ export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleTo
     )
 }
 
-export function TaskCardMenu({ section_list, task_index, current_section, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, onRemove, dispatch }){
+export function TaskCardMenu({ section_list, task_index, current_section, enableMoveTask = false, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, onRemove, dispatch }){
     
     return(
         <div className='flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
@@ -48,10 +48,15 @@ export function TaskCardMenu({ section_list, task_index, current_section, toggle
                     className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'
                 />
             </div>
+
+            
             <div className={'flex relative'} title='Move Task'>
-                <SendToBack
-                    onClick={onToggleMoveMenu} 
-                    className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'/>
+
+                {enableMoveTask && (
+                    <SendToBack
+                        onClick={onToggleMoveMenu} 
+                        className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'/>
+                )}
                 
                 {toggleMoveMenu && (
                     <div className='flex flex-col gap-1 w-[100px] bg-primary top-6 right-[-3px] rounded-[5px] p-2 absolute shadow-lg shadow-secondary/50 z-10'>

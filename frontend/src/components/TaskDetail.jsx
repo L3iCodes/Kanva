@@ -73,8 +73,9 @@ export default function TaskDetail({task_detail, onTaskDetail, board, dispatch})
                                     subTask_index ={index}
                                     title={subTask.sub_task}
                                     status={subTask.done}
+                                    enableTaskMenu={true}
                                     dispatch={dispatch}
-                                    className={'!ml-0 !rounded-none border-1 border-secondary/10'}
+                                    className={'!ml-0 !rounded-none border-1 border-secondary/10 hover:border-accent'}
                                 />
                             ))}
                             
@@ -107,6 +108,7 @@ export default function TaskDetail({task_detail, onTaskDetail, board, dispatch})
 
                             <SubTaskCard 
                                 onClick={handleAddTask}
+                                enableTaskMenu={false}
                                 title={'+ Add Task'}
                                 className={`!ml-0 !rounded-none border-1 border-secondary/10 text-secondary/60 cursor-pointer
                                             hover:bg-secondary/5`}
