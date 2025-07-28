@@ -32,19 +32,13 @@ export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleTo
     )
 }
 
-export function TaskCardMenu({ section_list, task_index, current_section, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, dispatch }){
+export function TaskCardMenu({ section_list, task_index, current_section, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, onRemove, dispatch }){
     
     return(
         <div className='flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
             <div title='Delete Task'>
                 <X 
-                    onClick={(e)=>{
-                        e.stopPropagation();
-                        dispatch({
-                            type: 'DELETE_TASK',
-                            payload: {section_index: current_section, task_index:task_index}
-                        })
-                    }}
+                    onClick={(e) => onRemove(e)}
                     className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'
                 />
             </div>

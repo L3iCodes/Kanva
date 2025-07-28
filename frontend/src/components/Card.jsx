@@ -62,6 +62,14 @@ export function TaskCard({ section_index, task_index, task_details, section_list
         })
     }    
 
+    const removeTask = (e) => {
+        e.stopPropagation();
+        dispatch({
+            type: 'DELETE_TASK',
+            payload: {section_index: section_index, task_index:task_index}
+        })
+    }
+
     return(
         <>
             <div className={`${className} flex flex-col gap-1`}>
@@ -82,6 +90,7 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                                 setToggleMoveMenu(state => !state)
                                 e.stopPropagation()
                             }}
+                            onRemove={removeTask}
                             onToggleRename={toggleRename}
                             onMoveTask={moveTask}
                             dispatch={dispatch}
