@@ -3,6 +3,9 @@ import { act } from "react";
 
 export const board_reducer = (state, action) => {
     switch (action.type){
+        case 'INIT':
+            return action.payload;
+        
         case 'RENAME_SECTION': {
             const { section_index, newName } = action.payload;
             const updatedSections = [...state.sections]
