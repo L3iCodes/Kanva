@@ -109,7 +109,7 @@ export default function Board({ board, dispatch }){
                                         onClick={()=>{
                                             dispatch({
                                                 type: 'ADD_SECTION',
-                                                payload: { newSection }
+                                                payload: { name:newSection }
                                             })
 
                                             setToggleAddSection(false)

@@ -1,16 +1,38 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Card from "../components/Card"
 import { LoadingCard } from "../components/Card"
 import CreateBoard from "../components/CreateBoard"
 import { Navigate, useNavigate } from "react-router-dom"
 
 export default function BoardListPage(){
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
+    const sampleCollection = ['123', '153']
 
     // Control for create board modal
     const [createOpen, setCreateOpen] = useState(false)
     const handleCreate = () => setCreateOpen(true)
 
+    const [boards, setBoards] = useState([])
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchBoards = async () => {
+        const results = await Promise.all(
+            sampleCollection.map(id =>
+            fetch(`${BACKEND_URL}/kanban/${id}`)
+                .then(res => res.json())
+                .then(data => ({
+                id,
+                ...data.board
+                }))
+            )
+        )
+        setBoards(results)
+        }
+
+        fetchBoards()
+    }, [])
+    console.log(boards)
 
     return(
         <>
@@ -28,15 +50,16 @@ export default function BoardListPage(){
                                     hover:!bg-secondary hover:text-primary cursor-pointer`}
                         title={'Create new board'}
                     />
-                    <Card 
-                        onClick={() => navigate(`/kanban/${123}`)}
-                        title={`Vysta - A Movie Webite App`}
-                        description={`Lorem ipsum, dolor sit amet consectetur adipisicing elit. 
-                                    Beatae dolore deleniti facere voluptatem reiciendis officiis asperiores optio repellat.`
-                                    }
-                        showProgressBar={true}
-                    />
-                    {/* <LoadingCard length={7}/> */}
+                    
+                    {boards.map(board => (
+                        <Card
+                        key={board.id}
+                        onClick={() => navigate(`/kanban/${board.id}`)}
+                        title={board.title}
+                        description={board.desc}
+                        />
+                    ))}
+                    
                 </div>
 
                 <h2 className="font-bold mt-5">Shared with you</h2>

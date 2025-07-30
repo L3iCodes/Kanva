@@ -13,6 +13,7 @@ function App() {
         <Header />
         <Routes>
           <Route path='/' element={<BoardListPage />} />
+          <Route path='/create' element={<BoardListPage />} />
           <Route path='/kanban/:id' element={<KanbanPage />}/>
         </Routes>
       </div>
