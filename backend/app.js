@@ -28,6 +28,7 @@ mongoose.connect(DB_URL)
     .catch(err => console.log(`Can't connect to Mongoose DB. \n Error: ${err}`))
 
 
+// GET board data
 app.get(`/kanban/:id`, async (req, res) => {
     const id = req.params.id;
 
@@ -39,7 +40,30 @@ app.get(`/kanban/:id`, async (req, res) => {
     }
 })
 
+app.post('/kanban/create', async (req, res) => {
+    console.log('Creating board')
+    const boardData = req.body;
 
+    try{
+        const newBoard = new Board({
+            owner: boardData.owner,
+            title: boardData.title,
+            desc: boardData.desc,
+        })
+
+        console.log(newBoard)
+
+        await newBoard.save().then(console.log('Done creating board'));
+        return res.status(202).json({success: true, message: 'Succesfully created board'})
+    }catch(error){
+        console.log('Error creating board')
+        console.log(error)
+        return res.status(202).json({success: false, message: 'Failed creating board'})
+    }
+})
+
+
+// PUT / Update the board
 app.put(`/update-board/:id`, async (req, res) => {
     const id = req.params.id;
     const newBoard= req.body;
