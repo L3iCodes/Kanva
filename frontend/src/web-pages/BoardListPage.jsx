@@ -12,10 +12,10 @@ export default function BoardListPage(){
     const [personalLoading, setPersonalLoading] = useState(true)
     const [sharedLoading, setSharedLoading] = useState(true)
 
-
     const [sharedBoards, setSharedBoards] = useState([])
     const [loading, setLoading] = useState(true)
     const {user, token} = useAuth();
+    const navigate = useNavigate()
 
     // Control for create board modal
     const [createOpen, setCreateOpen] = useState(false)
@@ -75,8 +75,11 @@ export default function BoardListPage(){
                     setSharedLoading(false)
                 }
 
-                fetchPersonalBoards()
-                fetchSharedBoards()
+                setTimeout(() => {
+                    fetchPersonalBoards()
+                    fetchSharedBoards()
+                }, 200)
+                
 
                 console.log(data)
             

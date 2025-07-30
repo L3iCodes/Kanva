@@ -8,8 +8,9 @@ export default function Card({ title, description, className, showProgressBar = 
         <>
             <div 
                 onClick={onClick}
-                className={`${className} flex gap-2 flex-col h-[200px] bg-secondary rounded-[10px] text-primary p-3
-                            md:h-[250px]`}>
+                className={`${className} flex gap-2 flex-col h-[200px] bg-secondary/90 rounded-[10px] text-primary p-3 cursor-pointer
+                            md:h-[250px]
+                            hover:bg-secondary`}>
                 {title && (<h2 className="font-bold md:text-2xl">{title}</h2>)}
                 <p className="line-clamp-3">{description}</p>
 

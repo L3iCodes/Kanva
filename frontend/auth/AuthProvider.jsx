@@ -60,6 +60,7 @@ export const AuthProvider = ({children}) => {
             const data = await response.json();
 
             if(response.ok) {
+                localStorage.setItem('token', data.token)
                 setToken(data.token);
                 setUser(data.user);
                 return { success: true, message: data.message }

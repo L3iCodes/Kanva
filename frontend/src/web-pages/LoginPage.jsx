@@ -1,6 +1,6 @@
 import { EyeClosed, Eye, Mail } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 
 export default function LoginPage(){
@@ -9,11 +9,11 @@ export default function LoginPage(){
     const [isLoading, setIsLoading] = useState(false);
     
     const navigate = useNavigate()
+    const location = useLocation();
     const { login } = useAuth();
 
     const handleSignUp = () => navigate('/sign-up')
     const handlePassword = () => setShowPassword(state => !state)
-
     
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -30,6 +30,7 @@ export default function LoginPage(){
 
         if(result.success){
             setMessage({ message: 'Login successful!', success: true });
+            navigate('/')
         }else{
             setMessage({ message: result.message, success: false });
         }
