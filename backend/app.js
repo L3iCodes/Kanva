@@ -23,6 +23,7 @@ app.use(cors({
 import Board from './models/Board.js'; 
 import User from './models/User.js';
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
 const DB_URL = process.env.DB_URL
 mongoose.connect(DB_URL)
@@ -67,6 +68,8 @@ app.post('/kanban/create', async (req, res) => {
 })
 
 
+
+
 // PUT / Update the board
 app.put(`/update-board/:id`, async (req, res) => {
     const id = req.params.id;
@@ -85,6 +88,84 @@ app.put(`/update-board/:id`, async (req, res) => {
     }
 })
 
+
+
+
+
+const SECRET_KEY = process.env.SECRET_KEY
+app.post('/login', async (req, res) => {
+    try{
+        const {username, password} = req.body;
+
+        const user = await User.findOne({
+            $or: [{username},{password}]
+        });
+
+        if(!user){
+            return res.status(401).json({success: false, message:'User does not exsits'})
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(!isPasswordValid){
+            return res.status(401).json({success: false, message:'Incorrect password or email|username'})
+        }
+
+        //create the JWToken
+        const token = jwt.sign({
+            userId: user._id,
+            username: user.username,
+            email: user.email
+        }, SECRET_KEY, { expiresIn: '1d' })
+
+        res.status(200).json({
+            success: true,
+            message: 'Login succesfull',
+            token,
+            user:{
+                userId: user._id,
+                username: user.username,
+                email: user.email
+            }
+        })
+
+    }catch(error){
+        console.log('Login unsuccessfull')
+        res.status(404).json({ success: false, message: 'Internal server error' });
+    }
+})
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; //[Bearer, Token]
+    console.log('🔐 Token:', token);
+
+    if(!token){
+        return res.status(401).json({ message: 'Access token required' });
+    }
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if(err) {
+            return res.status(401).json({ message: 'Access token required' });
+        }
+        req.user = user;
+        next();
+    })
+}
+
+// Token Verification
+app.get('/verify-token', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        user: {
+            id: req.user.userId,
+            username: req.user.username,
+            email: req.user.email
+        }
+    });
+});
+
+// Create account
 app.post(`/sign-up`, async (req, res) => {
     const account = req.body;
 
@@ -112,4 +193,21 @@ app.post(`/sign-up`, async (req, res) => {
     }catch(error){
         console.log(`Failed to add user: ${username} - ${email}`)
     }
+})
+
+// GET user boards
+app.post(`/kanban/boards`, authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    console.log('GETTING BOARD OF USER ID: '+ userId)
+
+    const user = await User.findById(userId)
+        .populate('personal_board')
+        .populate('shared_board')
+    console.log(user)
+
+    res.json(({
+        personal_board: user.personal_board,
+        shared_board: user.shared_board
+    }))
+
 })
