@@ -15,6 +15,7 @@ export default function Board({ board, dispatch }){
     const [taskDetail, setTaskDetail] = useState({})
     const [openTaskDetail, setOpenTaskDetail] = useState(false)
 
+    
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >

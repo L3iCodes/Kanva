@@ -1,10 +1,12 @@
 import { ChevronDown, ChevronUp, House, Kanban, MoonStar, SunMedium, LogOut  } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function Navbar(){
     // Navbar Controls
     const [navbarOpen, setNavbarOpen] = useState(false)
     const handleNavbar = () => setNavbarOpen(state => !state)
+    const navigate = useNavigate()
 
     // Theme Control (Darkmode / LightMode)
     const [isDark, setIsDark] = useState(false)
@@ -42,8 +44,8 @@ function Navbar(){
                                 ${navbarOpen ? 'flex' : 'hidden'}`}
                 >
 
-                    <div title='Home'><House className='icon' /></div>
-                    <div title='Kanban'><Kanban className='icon'/></div>
+                    <div onClick={() => navigate(`/`)} title='Home'><House className='icon' /></div>
+                    <div onClick={() => navigate(`/board-list`)} title='Kanban'><Kanban className='icon'/></div>
                     
                 </div>
                 

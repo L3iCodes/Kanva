@@ -7,6 +7,8 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.listen(PORT, () => {
     console.log(`Server is running at localhost:${PORT}`);
 });
@@ -17,8 +19,10 @@ app.use(cors({
     credentials: true
 }));
 
-
+// DATABASE -----------------------------------------------------------------------------------
 import Board from './models/Board.js'; 
+import User from './models/User.js';
+import bcrypt from 'bcrypt'
 
 const DB_URL = process.env.DB_URL
 mongoose.connect(DB_URL)
@@ -53,7 +57,7 @@ app.post('/kanban/create', async (req, res) => {
 
         console.log(newBoard)
 
-        await newBoard.save().then(console.log('Done creating board'));
+        await newBoard.save();
         return res.status(202).json({success: true, message: 'Succesfully created board'})
     }catch(error){
         console.log('Error creating board')
@@ -67,7 +71,6 @@ app.post('/kanban/create', async (req, res) => {
 app.put(`/update-board/:id`, async (req, res) => {
     const id = req.params.id;
     const newBoard= req.body;
-    console.log('UPDATING')
 
     try{
         const updated = await Board.findByIdAndUpdate(id, newBoard, {new:true, upsert:false});
@@ -75,9 +78,38 @@ app.put(`/update-board/:id`, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Board not found' });
         }
         
-        res.json({ success: true, board: updated });
+        res.status(201).json({ success: true, board: updated });
     }catch(error){
         console.error(`Error updating board ${id}:`, error);
-        res.json({ success: true, board: updated });
+        res.status(404).json({ success: false, board: updated });
+    }
+})
+
+app.post(`/sign-up`, async (req, res) => {
+    const account = req.body;
+
+    try{
+        const existingUser = await User.findOne({
+            $or: [{username:account.username}, {email:account.email}],
+        })
+
+        if (existingUser){
+            return res.status(400).json({success:false, message: "Username or Email already exists"});
+        }else{
+            const salt = 10;
+            const hashedPassword = await bcrypt.hash(account.password, salt)
+
+            const newUser = new User({
+                username: account.username,
+                email: account.email,
+                password: hashedPassword
+            })
+
+            await newUser.save();
+            return res.status(201).json({success: true, message: "User Created Succesfully"})
+
+        }
+    }catch(error){
+        console.log(`Failed to add user: ${username} - ${email}`)
     }
 })
