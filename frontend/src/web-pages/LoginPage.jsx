@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 
 export default function LoginPage(){
-    const [showPassword, setShowPassword] = useState(true)
+    const [showPassword, setShowPassword] = useState(false)
     const [message, setMessage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     

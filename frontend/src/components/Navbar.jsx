@@ -1,10 +1,12 @@
-import { ChevronDown, ChevronUp, House, Kanban, MoonStar, SunMedium, LogOut  } from 'lucide-react';
+import { ChevronDown, ChevronUp, House, Kanban, MoonStar, SunMedium, LogOut, LogIn  } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthProvider';
 
 function Navbar(){
     // Navbar Controls
     const [navbarOpen, setNavbarOpen] = useState(false)
+    const {user, logout} = useAuth();
     const handleNavbar = () => setNavbarOpen(state => !state)
     const navigate = useNavigate()
 
@@ -68,8 +70,10 @@ function Navbar(){
                             className='icon'
                         />
                     )}
-
-                    <div title='Logout'><LogOut className='icon'/></div>
+                    {user 
+                        ? (<div onClick={logout} title='Logout'><LogOut className='icon'/></div>) 
+                        : (<div onClick={() => navigate('/login')} title='Login'><LogIn className='icon'/></div>)}
+                    
                 </div>
                 
             </div>
