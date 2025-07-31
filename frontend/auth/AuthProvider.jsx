@@ -16,6 +16,7 @@ export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
+    const [refreshKey, setRefreshKey] = useState(0); // For triggering re-renders
 
     // Check if user is logged in on start
     useEffect(() => {
@@ -79,6 +80,14 @@ export const AuthProvider = ({children}) => {
         localStorage.removeItem('token')
     }
 
+    const refresh = () => {
+        setRefreshKey(prev => prev + 1);
+
+        if (token) {
+            validateToken();
+        }
+    }
+
     const isAuthenticated = () => {
         return !!token && !!user;
     };
@@ -105,7 +114,7 @@ export const AuthProvider = ({children}) => {
     };
 
     const value = {
-        user, token, loading, login, logout, isAuthenticated, authenticatedFetch
+        user, token, loading, refreshKey, login, logout, isAuthenticated, authenticatedFetch, refresh
     }
 
 

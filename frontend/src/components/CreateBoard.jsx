@@ -1,8 +1,11 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../../auth/AuthProvider';
+
 
 export default function CreateBoard( {modalOpen = false, onClose} ){
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
+    const {user, token, refresh} = useAuth()
 
     const [isLoading, setIsLoading] = useState(false);
     const handleSubmit = async (e) => {
@@ -13,12 +16,15 @@ export default function CreateBoard( {modalOpen = false, onClose} ){
         const boardData = {
             title: formData.get('boardName'),
             desc: formData.get('boardDescription'),
-            owner: '123'
+            owner: user.id
         }
         
         fetch(`${BACKEND_URL}/kanban/create`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(boardData)
         })  
             .then(res => {
@@ -28,7 +34,9 @@ export default function CreateBoard( {modalOpen = false, onClose} ){
                 }
                 setIsLoading(false);
                 e.target.reset();
+                
                 onClose()
+                refresh()
             })
             .catch(error => console.log(`Something went wrong: ${error}`))
     }

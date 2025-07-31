@@ -16,11 +16,11 @@ const SectionSchema = new mongoose.Schema({
 });
 
 const BoardSchema = new mongoose.Schema({
-    _id: String,
-    owner: Number,
+    owner: mongoose.Schema.Types.ObjectId,
     title: String,
     desc: String,
     sections: [SectionSchema]
 }, {timestamps:true});
 
 export default mongoose.models.Board || mongoose.model('board', BoardSchema);
+

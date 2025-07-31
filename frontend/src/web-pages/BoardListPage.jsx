@@ -14,7 +14,7 @@ export default function BoardListPage(){
 
     const [sharedBoards, setSharedBoards] = useState([])
     const [loading, setLoading] = useState(true)
-    const {user, token} = useAuth();
+    const {user, token, refreshKey} = useAuth();
     const navigate = useNavigate()
 
     // Control for create board modal
@@ -23,7 +23,7 @@ export default function BoardListPage(){
     
     useEffect(() => {
         fetchUserBoards();
-    }, [])
+    }, [refreshKey])
 
 
     // Fetch lsit of user boards
@@ -80,9 +80,6 @@ export default function BoardListPage(){
                     fetchSharedBoards()
                 }, 200)
                 
-
-                console.log(data)
-            
             }else{
                 console.log('Failed to fetch boards');
             }
@@ -93,8 +90,6 @@ export default function BoardListPage(){
             setLoading(false)
         }
     }
-
-    userBoards && console.log(`PERSONAL: ${userBoards.personal_board}` )
 
     // Generate Personal Boards
     useEffect(() => {

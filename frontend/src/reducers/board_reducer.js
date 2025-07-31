@@ -34,7 +34,7 @@ export const board_reducer = (state, action) => {
         case 'ADD_SECTION': {
             const { name } = action.payload;
             const newSection = {
-                name: name,
+                name: name.trim() === '' ? 'New Section' : name,
                 tasks: []
             }
 

@@ -45,27 +45,7 @@ app.get(`/kanban/:id`, async (req, res) => {
     }
 })
 
-app.post('/kanban/create', async (req, res) => {
-    console.log('Creating board')
-    const boardData = req.body;
 
-    try{
-        const newBoard = new Board({
-            owner: boardData.owner,
-            title: boardData.title,
-            desc: boardData.desc,
-        })
-
-        console.log(newBoard)
-
-        await newBoard.save();
-        return res.status(202).json({success: true, message: 'Succesfully created board'})
-    }catch(error){
-        console.log('Error creating board')
-        console.log(error)
-        return res.status(202).json({success: false, message: 'Failed creating board'})
-    }
-})
 
 
 
@@ -138,7 +118,6 @@ app.post('/login', async (req, res) => {
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; //[Bearer, Token]
-    console.log('🔐 Token:', token);
 
     if(!token){
         return res.status(401).json({ message: 'Access token required' });
@@ -198,16 +177,45 @@ app.post(`/sign-up`, async (req, res) => {
 // GET user boards
 app.post(`/kanban/boards`, authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    console.log('GETTING BOARD OF USER ID: '+ userId)
 
     const user = await User.findById(userId)
         .populate('personal_board')
         .populate('shared_board')
-    console.log(user)
 
     res.json(({
         personal_board: user.personal_board,
         shared_board: user.shared_board
     }))
 
+})
+
+app.post('/kanban/create', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const boardData = req.body;
+
+    console.log('Creating board for user ' + userId)
+
+    try{
+        const newBoard = new Board({
+            owner: boardData.owner,
+            title: boardData.title,
+            desc: boardData.desc,
+        })
+
+        await User.updateOne(
+            {_id: userId},
+                {
+                    $push: {
+                        personal_board: newBoard._id
+                    }
+                }
+        )
+
+        await newBoard.save();
+        return res.status(202).json({success: true, message: 'Succesfully created board'})
+    }catch(error){
+        console.log('Error creating board')
+        console.log(error)
+        return res.status(202).json({success: false, message: 'Failed creating board'})
+    }
 })
