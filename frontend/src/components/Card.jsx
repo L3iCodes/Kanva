@@ -2,9 +2,87 @@ import { use, useEffect, useRef, useState } from "react";
 import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 import { TaskCardMenu } from "./Menus";
+import { useAuth } from "../../auth/AuthProvider";
 
-export default function Card({ children, title, description, className, showProgressBar = false, onClick, onMouseEnter, onMouseLeave}){
+export default function Card({ children, id, title = ' ', description = ' ', className, showProgressBar = false, onClick, enableMenu = false}){
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
     const [toggleMenu, setToggleMenu] = useState(false)
+    const [disablEdit, setDisableEdit] = useState(true)
+    const {token, refresh} = useAuth()
+    const [newTitle, setNewTitle] = useState(title)
+    const [newDesc, setnewDesc] = useState(description)
+    const descRef = useRef();
+    const titleRef = useRef();
+
+    const toggleRename = (e) => {
+        e.stopPropagation()
+        setDisableEdit(state => !state)
+
+        setTimeout(() => {
+            titleRef.current?.focus()
+            titleRef.current?.select()
+        }, 0)
+
+    }
+    
+    // Delete board
+    const deleteBoard = async (id, e) => {
+        e.stopPropagation();
+        
+        try{
+            const response = await fetch(`${BACKEND_URL}/kanban/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            })
+            if(response.ok){
+                const data = await response.json();
+                console.log(data.message); 
+                refresh();
+            }else{
+                const data = await response.json();
+                console.log(data.message); 
+            }
+
+        }catch(error){
+            console.log('Failed board deletion: ' + error)
+        }  
+    }
+
+    const renameBoard = async (e) => {
+        e.stopPropagation();
+        console.log('Renaming Board');
+
+        try {
+            console.log('Entered')
+            console.log(newDesc, newTitle)
+            const response = await fetch(`${BACKEND_URL}/kanban/rename/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    newTitle: newTitle,
+                    newDesc: newDesc
+                })
+            });
+
+            const data = await response.json();
+            console.log(data)
+
+            if (response.ok) {
+                console.log(data.message);
+                refresh();
+            } else {
+                console.log(data.message);
+            }
+        } catch (error) {
+            console.log('Renaming Error: ' + error);
+        }
+    }
     
     return(
         <>
@@ -16,13 +94,54 @@ export default function Card({ children, title, description, className, showProg
                             md:h-[250px]
                             hover:bg-secondary`}
             >
-                {title && (<h2 className="font-bold md:text-2xl">{title}</h2>)}
-                <p className="line-clamp-3">{description}</p>
+
+                <textarea
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter'){
+                            e.preventDefault();
+                            renameBoard(e);
+                            toggleRename(e);
+                            refresh();
+                        }
+                    }}
+                    className={`line-clamp-2 font-bold md:text-2xl resize-none ${!disablEdit && 'border-accent border-1 rounded-[5px]'}`}
+                    disabled = {disablEdit}
+                    ref={titleRef}
+                    value={newTitle}
+                >
+                    {title}
+                </textarea>
+
+                <textarea
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => setnewDesc(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter'){
+                            e.preventDefault();
+                            renameBoard(e);
+                            toggleRename(e);
+                            refresh();
+                        }
+                    }}
+                    className={`line-clamp-2 text-[12px] h-[90%] resize-none ${!disablEdit && 'border-accent border-1 rounded-[5px]'}`}
+                    disabled = {disablEdit}
+                    ref={descRef}
+                    value={newDesc}
+                >
+                    {description}
+                </textarea>
                 
-                {children && toggleMenu && (
-                    children  
-                )}
+                {toggleMenu && enableMenu &&
                 
+                    (<TaskCardMenu 
+                        onRemove={(e) => deleteBoard(id, e)}
+                        onToggleRename={(e) => toggleRename(e)}
+                    />)
+                }
+                
+
                 {showProgressBar && (<ProgressBar totalTask={10} doneTask={9} />) }
             </div>
         </>

@@ -22,7 +22,7 @@ export default function BoardListPage(){
     // Control for create board modal
     const [createOpen, setCreateOpen] = useState(false)
     const handleCreate = () => setCreateOpen(true)
-    
+
     useEffect(() => {
         fetchUserBoards();
     }, [refreshKey])
@@ -57,6 +57,8 @@ export default function BoardListPage(){
                             )
                         )
                         setPersonalBoards(results)
+                    }else{
+                        setPersonalBoards([]);
                     }
                     setPersonalLoading(false)
                 }
@@ -74,6 +76,8 @@ export default function BoardListPage(){
                             )
                         )
                         setSharedBoards(results)
+                    }else{
+                        setSharedBoards([]);
                     }
                     setSharedLoading(false)
                 }
@@ -117,32 +121,7 @@ export default function BoardListPage(){
         fetchPersonalBoards()
     }, [])
 
-    // Delete board
-    const deleteBoard = async (id, e) => {
-        e.stopPropagation();
-        
-        try{
-            const response = await fetch(`${BACKEND_URL}/kanban/delete/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-            })
 
-            if(response.ok){
-                const data = await response.json();
-                console.log(data.message); // Fix 3: Get message from parsed data
-                refresh();
-            }else{
-                const data = await response.json();
-                console.log(data.message); // Fix 4: Same here
-            }
-
-        }catch(error){
-            console.log('Failed board deletion: ' + error)
-        }  
-    }
 
     return(
         <>
@@ -154,36 +133,31 @@ export default function BoardListPage(){
 
                 <h2 className="font-bold">Your personal boards</h2>
                 <div className="grid gap-2 grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    <Card 
+                    <button
                         onClick={handleCreate}
-                        className={`border-2 border-dashed border-secondary !bg-primary text-secondary items-center !justify-center
+                        className={`border-2 border-dashed border-secondary bg-primary text-secondary items-center justify-center rounded-[10px] text-2xl font-bold h-[200px]
+                                    md:h-[250px]
                                     hover:!bg-secondary hover:text-primary cursor-pointer`}
-                        title={'Create new board'}
-                    />
-                    
+                    >
+                        Create new board
+                    </button>
+                     
                     {personalLoading 
                         ? (<LoadingCard length={6}/>)
                         : (
                             personalBoards.map(board => (
                                 <Card
                                     key={board.id}
+                                    id={board.id}
                                     onClick={() => navigate(`/kanban/${board.id}`)}
                                     title={board.title}
                                     description={board.desc}
-                                    
-                                >
-                                    
-                                    <TaskCardMenu 
-                                        onRemove={(e) => deleteBoard(board.id, e)} // Fix 5: Just pass board.id                                        onRename={null}
-                                    />
-                                   
-                                </Card>
+                                    enableMenu={true}
+                                />
                             ))
                         )
                     }
 
-                    
-                    
                 </div>
 
                 <h2 className="font-bold mt-5">Shared with you</h2>
@@ -195,14 +169,12 @@ export default function BoardListPage(){
                                     sharedBoards.map(board => (
                                         <Card
                                             key={board.id}
+                                            id={board.id}
                                             onClick={() => navigate(`/kanban/${board.id}`)}
                                             title={board.title}
                                             description={board.desc}
-                                        >
-                                            <TaskCardMenu 
-                                                onRemove={(e) => deleteBoard(board.id, e)} // Fix 5: Just pass board.id                                        onRename={null}
-                                            />
-                                        </Card>
+                                            enableMenu={true}
+                                        />
                                     ))
                                 )
                             : <h1>No shared boards</h1>

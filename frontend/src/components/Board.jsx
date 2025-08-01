@@ -68,21 +68,22 @@ export default function Board({ board, dispatch }){
 
 
                     <div className="flex flex-col gap-3 text-[12px]">
-                        <Card
+                        <button
                             onClick={() => {
-                                setToggleAddSection(state => !state)
-                                setNewSection('')
+                                    setToggleAddSection(state => !state)
+                                    setNewSection('')
 
-                                setTimeout(() => {
-                                    newSectionRef.current?.focus();
-                                    newSectionRef.current?.select();
-                                }, 0)
-                            }}
-                            className={`!h-fit w-[250px] items-start !bg-accent/50 text-secondary/80 !rounded-[5px] !p-1 cursor-pointer
+                                    setTimeout(() => {
+                                        newSectionRef.current?.focus();
+                                        newSectionRef.current?.select();
+                                    }, 0)
+                                }}
+                            className={`flex !h-fit w-[250px] justufy-start !bg-accent/50 text-secondary/80 !rounded-[5px] !p-1 cursor-pointer
                                         hover:!bg-accent/100`} 
-                            description={'+ Section'}
-                        />
-
+                        >
+                            + Section
+                        </button>
+                        
                         {toggleAddSection && (
                             <div className="flex items-center gap-2 border-accent border-2 p-1 rounded-[5px]">
                                 <input 

@@ -181,22 +181,24 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                         >Save
                             </button>
                         </div>
-
-                        <Card
+                                
+                        <button
                             onClick={() => {
-                                    addTaskTop && setAddTaskTop(false); 
-                                    setAddTaskBot(state=>!state);
-                                    setNewTask('')
-                                    
-                                    setTimeout(() => {
-                                        inputEnd.current?.focus();
-                                        inputEnd.current?.select();
-                                    }, 0);
-                                }}
-                            className={`!h-fit w-[250px] items-start !bg-primary/0 text-secondary/80 !p-1 cursor-pointer
-                                        hover:!bg-primary/90`} 
-                            description={ addTaskBot ? `Close`  :  `+ Add Task`}
-                        />
+                                        addTaskTop && setAddTaskTop(false); 
+                                        setAddTaskBot(state=>!state);
+                                        setNewTask('')
+                                        
+                                        setTimeout(() => {
+                                            inputEnd.current?.focus();
+                                            inputEnd.current?.select();
+                                        }, 0);
+                                    }}
+                            className={`flex flex-row justify-start w-[250px] bg-primary/0 text-secondary/80 text-[12px] p-1 cursor-pointer
+                                        hover:bg-primary/90`}
+                        >
+                            { addTaskBot ? `Close`  :  `+ Add Task`}
+                        </button>
+                       
                     </div>
                 )}
                 

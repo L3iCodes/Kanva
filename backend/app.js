@@ -46,10 +46,6 @@ app.get(`/kanban/:id`, async (req, res) => {
 })
 
 
-
-
-
-
 // PUT / Update the board
 app.put(`/update-board/:id`, async (req, res) => {
     const id = req.params.id;
@@ -270,7 +266,37 @@ app.delete('/kanban/delete/:id', authenticateToken, async (req, res) => {
             return res.status(201).json({success: true, message:'Succesfully removed shared board'})
         }
     }catch(error){
-        console.log('Connection error ' + error)
+        console.log('ERROR: ' + error)
+        return res.status(401).json({success: false, message:'Connection Error'})
     }
+})
+
+app.post('/kanban/rename/:id', async (req, res) => {
+    const boardId = req.params.id;
+    const {newTitle, newDesc} = req.body;
+    console.log(newTitle, newDesc)
     
+    try{
+        const board = await Board.findById(boardId);
+
+        if(!board){
+            console.log('Board does not exists')
+            return res.status(401).json({success: false, message:'Board does not exists'})
+        }
+
+        await Board.findByIdAndUpdate(
+            boardId,
+            {
+                title: newTitle.trim(),
+                desc: newDesc.trim(),
+            },
+            {new: true}
+        )
+
+        return res.status(201).json({success: true, message:`Succesfully updated board: ${boardId}`})
+    }catch(error){
+        console.log('ERROR: ' + error)
+        return res.status(401).json({success: false, message:'Connection Error'})
+    }
+
 })
