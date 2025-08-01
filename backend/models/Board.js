@@ -16,11 +16,17 @@ const SectionSchema = new mongoose.Schema({
 });
 
 const BoardSchema = new mongoose.Schema({
-    owner: mongoose.Schema.Types.ObjectId,
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
     title: String,
     desc: String,
+    shared_user: [{
+        type: mongoose.Schema.Types.ObjectId,
+    }],
     sections: [SectionSchema]
 }, {timestamps:true});
 
-export default mongoose.models.Board || mongoose.model('board', BoardSchema);
+export default mongoose.models.Board || mongoose.model('boards', BoardSchema);
 

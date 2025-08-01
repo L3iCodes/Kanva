@@ -97,3 +97,4 @@ export default function CreateBoard( {modalOpen = false, onClose} ){
         </>
     )
 }
+

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
-import Card from "../components/Card"
+import Card, { TaskCard } from "../components/Card"
 import { LoadingCard } from "../components/Card"
 import CreateBoard from "../components/CreateBoard"
 import { Navigate, useNavigate } from "react-router-dom"
 import { useAuth } from "../../auth/AuthProvider"
+import { TaskCardMenu } from "../components/Menus"
+
 
 export default function BoardListPage(){
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
@@ -11,10 +13,10 @@ export default function BoardListPage(){
     const [personalBoards, setPersonalBoards] = useState([])
     const [personalLoading, setPersonalLoading] = useState(true)
     const [sharedLoading, setSharedLoading] = useState(true)
-
     const [sharedBoards, setSharedBoards] = useState([])
+    
     const [loading, setLoading] = useState(true)
-    const {user, token, refreshKey} = useAuth();
+    const {user, token, refreshKey, refresh} = useAuth();
     const navigate = useNavigate()
 
     // Control for create board modal
@@ -40,6 +42,7 @@ export default function BoardListPage(){
 
             if(response.ok){
                 const data = await response.json();
+                console.log(data)
                 
                 const fetchPersonalBoards = async () => {
                     if (data.personal_board.length > 0){
@@ -114,6 +117,33 @@ export default function BoardListPage(){
         fetchPersonalBoards()
     }, [])
 
+    // Delete board
+    const deleteBoard = async (id, e) => {
+        e.stopPropagation();
+        
+        try{
+            const response = await fetch(`${BACKEND_URL}/kanban/delete/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+            })
+
+            if(response.ok){
+                const data = await response.json();
+                console.log(data.message); // Fix 3: Get message from parsed data
+                refresh();
+            }else{
+                const data = await response.json();
+                console.log(data.message); // Fix 4: Same here
+            }
+
+        }catch(error){
+            console.log('Failed board deletion: ' + error)
+        }  
+    }
+
     return(
         <>
             <div 
@@ -136,11 +166,18 @@ export default function BoardListPage(){
                         : (
                             personalBoards.map(board => (
                                 <Card
-                                key={board.id}
-                                onClick={() => navigate(`/kanban/${board.id}`)}
-                                title={board.title}
-                                description={board.desc}
-                                />
+                                    key={board.id}
+                                    onClick={() => navigate(`/kanban/${board.id}`)}
+                                    title={board.title}
+                                    description={board.desc}
+                                    
+                                >
+                                    
+                                    <TaskCardMenu 
+                                        onRemove={(e) => deleteBoard(board.id, e)} // Fix 5: Just pass board.id                                        onRename={null}
+                                    />
+                                   
+                                </Card>
                             ))
                         )
                     }
@@ -153,7 +190,7 @@ export default function BoardListPage(){
                 <div className="grid gap-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-4">
                     {sharedLoading 
                         ? (<LoadingCard length={6}/>)
-                        : sharedLoading > 0 
+                        : sharedBoards.length > 0 
                             ?   (
                                     sharedBoards.map(board => (
                                         <Card
@@ -161,7 +198,11 @@ export default function BoardListPage(){
                                             onClick={() => navigate(`/kanban/${board.id}`)}
                                             title={board.title}
                                             description={board.desc}
-                                        />
+                                        >
+                                            <TaskCardMenu 
+                                                onRemove={(e) => deleteBoard(board.id, e)} // Fix 5: Just pass board.id                                        onRename={null}
+                                            />
+                                        </Card>
                                     ))
                                 )
                             : <h1>No shared boards</h1>
@@ -173,3 +214,4 @@ export default function BoardListPage(){
         </>
     )
 }
+

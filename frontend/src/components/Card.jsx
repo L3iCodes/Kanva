@@ -3,17 +3,26 @@ import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 import { TaskCardMenu } from "./Menus";
 
-export default function Card({ title, description, className, showProgressBar = false, onClick}){
+export default function Card({ children, title, description, className, showProgressBar = false, onClick, onMouseEnter, onMouseLeave}){
+    const [toggleMenu, setToggleMenu] = useState(false)
+    
     return(
         <>
             <div 
                 onClick={onClick}
-                className={`${className} flex gap-2 flex-col h-[200px] bg-secondary/90 rounded-[10px] text-primary p-3 cursor-pointer
+                onMouseEnter={() => setToggleMenu(true)}
+                onMouseLeave={() => setToggleMenu(false)}
+                className={`${className} flex gap-2 flex-col h-[200px] bg-secondary/90 rounded-[10px] text-primary p-3 cursor-pointer relative
                             md:h-[250px]
-                            hover:bg-secondary`}>
+                            hover:bg-secondary`}
+            >
                 {title && (<h2 className="font-bold md:text-2xl">{title}</h2>)}
                 <p className="line-clamp-3">{description}</p>
-
+                
+                {children && toggleMenu && (
+                    children  
+                )}
+                
                 {showProgressBar && (<ProgressBar totalTask={10} doneTask={9} />) }
             </div>
         </>

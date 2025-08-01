@@ -58,7 +58,7 @@ export function TaskCardMenu({ section_list, task_index, current_section, enable
                         className='w-[18px] h-fit p-[2px] text-secondary/80 rounded-[2px] hover:bg-accent/70 cursor-pointer'/>
                 )}
                 
-                {toggleMoveMenu && (
+                {toggleMoveMenu  && (
                     <div className='flex flex-col gap-1 w-[100px] bg-primary top-6 right-[-3px] rounded-[5px] p-2 absolute shadow-lg shadow-secondary/50 z-10'>
                         {section_list.map((element, index) => (
                             <button

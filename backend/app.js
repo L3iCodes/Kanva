@@ -192,12 +192,12 @@ app.post(`/kanban/boards`, authenticateToken, async (req, res) => {
 app.post('/kanban/create', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const boardData = req.body;
-
+    const objectId = new mongoose.Types.ObjectId(userId)
     console.log('Creating board for user ' + userId)
 
     try{
         const newBoard = new Board({
-            owner: boardData.owner,
+            owner: objectId,
             title: boardData.title,
             desc: boardData.desc,
         })
@@ -218,4 +218,59 @@ app.post('/kanban/create', authenticateToken, async (req, res) => {
         console.log(error)
         return res.status(202).json({success: false, message: 'Failed creating board'})
     }
+})
+
+app.delete('/kanban/delete/:id', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const boardId = req.params.id;
+    console.log('Removing Board: '+boardId+' from User: ' + userId)
+
+    try{
+        const board = await Board.findById(boardId)
+        console.log('Found board:', board);
+
+        if(!board){
+            console.log('Board does not exists')
+            return res.status(401).json({success: false, message:'Board does not exists'})
+        }
+
+        if(board.owner.toString() === userId){
+            console.log('User is owner - deleting entire board');
+
+            await Promise.all([
+                // Remove board Id in owner
+                User.findByIdAndUpdate(
+                    board.owner,
+                    { $pull: { personal_board: boardId } }
+                ),
+
+                // Remove board Id for all shared users
+                User.updateMany(
+                    { _id: { $in: board.shared_user } },
+                    { $pull: { shared_board: boardId } }
+                ),
+
+                // Delete board
+                Board.findByIdAndDelete(boardId)
+            ]);
+
+            return res.status(201).json({success: true, message:'Succesfully deleted shared board'})
+        }else{
+            // Non-owner, remove board is from shared_board
+            await User.findByIdAndUpdate(
+                userId,
+                    { $pull: {shared_board: boardId } }
+            )
+
+            await Board.findByIdAndUpdate(
+                boardId,
+                {$pull: {shared_user: userId}}
+            )
+
+            return res.status(201).json({success: true, message:'Succesfully removed shared board'})
+        }
+    }catch(error){
+        console.log('Connection error ' + error)
+    }
+    
 })
