@@ -2,8 +2,11 @@ import { useRef, useState } from "react"
 import Card from "./Card"
 import { Plus, Ellipsis, ArrowRightToLine } from 'lucide-react'
 import SectionMenu from "./Menus"
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { useAuth } from "../../auth/AuthProvider"
  
-export default function Section( {section_index, section_name, totalTask, dispatch, children}){
+export default function Section( {section_index, id, section_name, totalTask, dispatch, children}){    
     // Toggle Section Menu
     const [toggleSectionMenu, setToggleSectionMenu] = useState(false)
 
@@ -42,15 +45,35 @@ export default function Section( {section_index, section_name, totalTask, dispat
         setAddTaskBot(false)
     }
 
+    // For Drag Drop
+    const {attributes, listeners, transform, transition, setNodeRef} = useSortable({id})
+    const style = {
+        transition,
+        transform: CSS.Transform.toString(transform)
+    }
+
     return(
         <>
-            <div 
+            <div
+                ref={setNodeRef} {...attributes}
+                style={style}
+                onPointerDown={(e) => {
+                    // Prevent dragging from buttons like menu or plus
+                    const target = e.target;
+                    if (
+                        target.closest('.no-drag') // any element with this class will NOT trigger drag
+                    ) {
+                        e.stopPropagation();
+                        return;
+                    }
+                    listeners.onPointerDown?.(e);
+                }}
                 className={`flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
                             transition-all ease-in duration-200
                             ${collapse ? `w-[50px]` : 'w-fit'}`}
             >
                 {toggleSectionMenu && (
-                    <SectionMenu 
+                    <SectionMenu
                         onCollapse={() => setCollapse(true)}
                         onRename={toggleRenameSection}
                         onDelete={() => {
@@ -60,6 +83,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                             })
                         }}
                         onHandleToggleSection={() => setToggleSectionMenu(false)}
+                        className={'no-drag'}
                         />
                 )}
                 
@@ -71,7 +95,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                         <div title={'Open'}>
                             <ArrowRightToLine
                                 onClick={() => setCollapse(false)} 
-                                className="h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer
+                                className="no-drag h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer
                                                 hover:bg-secondary/10"/>
                         </div>
                     )}
@@ -97,11 +121,11 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                     }
                                 }}
 
-                                className={`px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+                                className={`no-drag px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
                             />) 
                         : ( <p 
                                 onDoubleClick={toggleRenameSection}
-                                className={`px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
+                                className={`no-drag px-2 m-1 bg-primary text-secondary rounded-[3px] max-w-[100px] truncate text-[12px] ${collapse && 'mt-10 mb-1 text-right rotate-[-90deg] origin-center'}`}  
 
                                 >{sectionName}
                             </p>)
@@ -113,11 +137,15 @@ export default function Section( {section_index, section_name, totalTask, dispat
                     {!collapse && (
                         <div className="flex ml-auto gap-2">
                             <Ellipsis
-                                onClick={() => setToggleSectionMenu(state=>!state)} 
-                                className="h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setToggleSectionMenu(state=>!state); 
+                                }} 
+                                className="no-drag h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer
                                             hover:bg-secondary/10"/>
                             <Plus
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation()
                                     addTaskBot && setAddTaskBot(false); 
                                     setAddTaskTop(state=>!state);
                                     setNewTask('')
@@ -127,7 +155,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                         inputStart.current?.select();
                                     }, 0);
                                 }}
-                                className="h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer 
+                                className="no-drag h-full p-1 text-secondary/50 rounded-[5px] cursor-pointer 
                                             hover:bg-secondary/10"/> 
                         </div>
                     )}
@@ -135,10 +163,11 @@ export default function Section( {section_index, section_name, totalTask, dispat
 
                 {!collapse && (
 
-                    <div className="flex flex-col h-full gap-2 overflow-y-auto">
+                    <div 
+                        className="flex flex-col h-full gap-2 overflow-y-auto">
                         
                         {addTaskTop && (
-                            <div className={`flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
+                            <div className={`no-drag flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
                                 <input 
                                     type="text"
                                     ref={inputStart} 
@@ -152,7 +181,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                 />
                                 <button
                                     onClick={() => addTask('start')} 
-                                    className="px-2 bg-accent/80 rounded-[5px] text-primary cursor-pointer
+                                    className="no-drag px-2 bg-accent/80 rounded-[5px] text-primary cursor-pointer
                                             hover:bg-accent/100 "
                                             >Save
                                 </button>
@@ -193,7 +222,7 @@ export default function Section( {section_index, section_name, totalTask, dispat
                                             inputEnd.current?.select();
                                         }, 0);
                                     }}
-                            className={`flex flex-row justify-start w-[250px] bg-primary/0 text-secondary/80 text-[12px] p-1 cursor-pointer
+                            className={`no-drag flex flex-row justify-start w-[250px] bg-primary/0 text-secondary/80 text-[12px] p-1 cursor-pointer
                                         hover:bg-primary/90`}
                         >
                             { addTaskBot ? `Close`  :  `+ Add Task`}

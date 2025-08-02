@@ -1,20 +1,42 @@
 import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
 import TaskDetail from "./TaskDetail"
-
 import { Plus, Check } from "lucide-react"
-import { useRef, useState } from "react"
+import { act, useRef, useState } from "react"
+import { DndContext, closestCorners } from '@dnd-kit/core'
+import { arrayMove, horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable'
+import { useAuth } from "../../auth/AuthProvider"
 
 export default function Board({ board, dispatch }){
     // Add Section Toggle
     const [toggleAddSection, setToggleAddSection] = useState(false)
     const [newSection, setNewSection] = useState('')
     const newSectionRef = useRef(null)
+
+    const { refresh } = useAuth()
     
     // Open Task Detail Modal
     const [taskDetail, setTaskDetail] = useState({})
     const [openTaskDetail, setOpenTaskDetail] = useState(false)
 
+    const getSectionPos = id => board.sections.findIndex(section => section._id === id)
+
+    const handleDragEnd = (e) => {
+        const {active, over} = e;
+
+        if (active.id === over.id) return;
+        
+        const originalPos = getSectionPos(active.id)
+        const newPos = getSectionPos(over.id)
+        const newSection = arrayMove(board.sections, originalPos, newPos)
+
+        dispatch({
+            type: 'REORDER_SECTION',
+            payload: {newSection: newSection}
+        })
+
+        refresh()
+    }
     
     return(
         <>
@@ -34,37 +56,46 @@ export default function Board({ board, dispatch }){
                 </div>
 
                 <div className="flex flex-row justify-baseline gap-4 mt-2 h-full">
-                    
-                    {board.sections.map((section, section_index) => (
-                        <Section
-                            key={`section-${section.name}`}
-                            section_index={section_index}
-                            section_name={section.name}
-                            totalTask={section.tasks.length}
-                            dispatch={dispatch}
-                        >
-                            {section.tasks.map((task, task_index) => (
-                                <TaskCard 
-                                    key={`${section.name}-${task.task_name}-${task_index}`}
+                    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+                        
+                         <SortableContext items={board.sections.map(section => section._id)} strategy={horizontalListSortingStrategy}>
+
+                            {board.sections.map((section, section_index) => (
+                                console.log('SECTION ID: '+ section._id + ' INDEX: ' +section_index),
+                                <Section
+                                    key={section._id}
+                                    id={section._id}
                                     section_index={section_index}
-                                    task_index={task_index}
-                                    task_details={task}
-                                    board={board}
-                                    section_list={board.sections.map(section => section.name)}
-                                    className={'w-[250px]'}
-                                    onTaskDetail={() => {
-                                        setOpenTaskDetail(state => !state);
-                                        setTaskDetail({
-                                            section_index: section_index,
-                                            task_index: task_index,
-                                        })
-                                    }}
+                                    section_name={section.name}
+                                    totalTask={section.tasks.length}
                                     dispatch={dispatch}
-                                />
-                            ))}
-                            
-                        </Section>
-                    ))}
+                                >
+                                    {section.tasks.map((task, task_index) => (
+                                        <TaskCard 
+                                            key={task._id}
+                                            section_index={section_index}
+                                            task_index={task_index}
+                                            task_details={task}
+                                            board={board}
+                                            section_list={board.sections.map(section => section.name)}
+                                            className={'w-[250px]'}
+                                            onTaskDetail={() => {
+                                                setOpenTaskDetail(state => !state);
+                                                setTaskDetail({
+                                                    section_index: section_index,
+                                                    task_index: task_index,
+                                                })
+                                            }}
+                                            dispatch={dispatch}
+                                        />
+                                    ))} 
+                                </Section>
+                        ))}
+
+                        </SortableContext>
+                        
+                    </DndContext>
+                    
 
 
                     <div className="flex flex-col gap-3 text-[12px]">
@@ -103,6 +134,7 @@ export default function Board({ board, dispatch }){
                                             })
 
                                             setToggleAddSection(false)
+                                            refresh();
                                         }
                                     }}
                                 />
@@ -117,6 +149,7 @@ export default function Board({ board, dispatch }){
                                             setToggleAddSection(false)
                                         }} 
                                         className="w-[30px] p-1 hover:bg-accent rounded-[5px] cursor-pointer"/>
+                                        
                                 )}
                             </div>
                         )}

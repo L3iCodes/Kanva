@@ -1,9 +1,9 @@
 import { PanelLeftClose, Pen, Trash, X, SendToBack } from 'lucide-react'
 import { useState } from 'react'
 
-export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleToggleSection} ){
+export default function SectionMenu( {className, onRename, onDelete, onCollapse, onHandleToggleSection} ){
     return(
-        <div className="flex flex-col gap-2 items-start absolute right-[-140px] z-10 top-8 w-[200px] p-2 bg-primary rounded-[5px] shadow-lg shadow-secondary/50 text-secondary text-[12px]">
+        <div className={`${className} flex flex-col gap-2 items-start absolute right-[-140px] z-10 top-8 w-[200px] p-2 bg-primary rounded-[5px] shadow-lg shadow-secondary/50 text-secondary text-[12px]`}>
             <button 
                 onClick={() => {
                     onCollapse();
@@ -35,7 +35,7 @@ export default function SectionMenu( {onRename, onDelete, onCollapse, onHandleTo
 export function TaskCardMenu({ section_list, task_index, current_section, enableMoveTask = false, toggleMoveMenu, onToggleMoveMenu, onMoveTask, onToggleRename, onRemove, dispatch }){
     
     return(
-        <div className='flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
+        <div className='no-drag flex items-center gap-1 p-1 absolute top-1 right-1 bg-primary shadow-lg shadow-secondary/50 rounded-[5px]'>
             <div title='Delete Task'>
                 <X 
                     onClick={(e) => onRemove(e)}

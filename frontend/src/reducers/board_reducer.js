@@ -1,5 +1,6 @@
 import { SectionIcon } from "lucide-react";
 import { act } from "react";
+import mongoose from 'mongoose'
 
 export const board_reducer = (state, action) => {
     switch (action.type){
@@ -33,7 +34,10 @@ export const board_reducer = (state, action) => {
 
         case 'ADD_SECTION': {
             const { name } = action.payload;
+            const id = new mongoose.Types.ObjectId()
+
             const newSection = {
+                _id: id,
                 name: name.trim() === '' ? 'New Section' : name,
                 tasks: []
             }
@@ -41,6 +45,15 @@ export const board_reducer = (state, action) => {
             return {
                 ...state,
                 sections: [...state.sections, newSection]
+            }
+        }
+
+        case 'REORDER_SECTION': {
+            const { newSection } = action.payload;
+
+            return {
+                ...state,
+                sections: newSection
             }
         }
 
