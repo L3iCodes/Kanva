@@ -3,9 +3,10 @@ import Card, { TaskCard, SubTaskCard } from "./Card"
 import TaskDetail from "./TaskDetail"
 import { Plus, Check } from "lucide-react"
 import { act, useRef, useState } from "react"
-import { DndContext, closestCorners } from '@dnd-kit/core'
-import { arrayMove, horizontalListSortingStrategy, SortableContext } from '@dnd-kit/sortable'
+import { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, useDroppable } from '@dnd-kit/core'
+import { arrayMove, horizontalListSortingStrategy, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useAuth } from "../../auth/AuthProvider"
+import { version } from "react"
 
 export default function Board({ board, dispatch }){
     // Add Section Toggle
@@ -18,24 +19,147 @@ export default function Board({ board, dispatch }){
     // Open Task Detail Modal
     const [taskDetail, setTaskDetail] = useState({})
     const [openTaskDetail, setOpenTaskDetail] = useState(false)
+    const [activeDragItem, setActiveDragItem] = useState(null);
 
-    const getSectionPos = id => board.sections.findIndex(section => section._id === id)
+    const handleDragStart = (event) => {
+        const { active } = event;
+        setActiveDragItem(active.id);
+    };
 
     const handleDragEnd = (e) => {
+        setActiveDragItem(null);
+
         const {active, over} = e;
+        if (!over) return; // 🛡 Prevent error if dropped outside valid zone
+
+        const activeId = active.id.toString();
+        const overId = over.id.toString();
+        console.log('DRAGSTART ' +activeId)
+        console.log('DRAGEND ' +overId)
+
 
         if (active.id === over.id) return;
         
-        const originalPos = getSectionPos(active.id)
-        const newPos = getSectionPos(over.id)
-        const newSection = arrayMove(board.sections, originalPos, newPos)
+        // Section Reordering
+        if(activeId.startsWith('section-') && overId.startsWith('section-')){
+            const oldIndex = board.sections.findIndex(s=>`section-${s._id}` === activeId)
+            const newIndex = board.sections.findIndex(s=>`section-${s._id}` === overId)
 
-        dispatch({
-            type: 'REORDER_SECTION',
-            payload: {newSection: newSection}
+            if (oldIndex !== -1 && newIndex !== -1){
+                const newSection = arrayMove(board.sections, oldIndex, newIndex)
+                console.log('NEW SECTION '+ JSON.stringify(newSection))
+                
+                dispatch({
+                    type: 'REORDER_SECTION',
+                    payload: {newSection: newSection}
+                })
+
+                refresh()
+            }
+        }
+
+        // Task Reordering
+        if(activeId.startsWith('task-') && overId.startsWith('task-') || overId.startsWith('empty-placeholder-')){
+            let sourceSection = -1;
+            let targetSection = -1;
+
+            board.sections.forEach((section, sIndex) => {
+                if (section.tasks.some(task => `task-${task._id}` === activeId)) {
+                    sourceSection = sIndex;
+                }
+
+                
+            });
+
+            if (overId.startsWith('empty-placeholder-')) {
+                const targetSectionId = overId.replace('empty-placeholder-', '');
+                targetSection = board.sections.findIndex(section => section._id === targetSectionId);
+            } else if (overId.startsWith('task-')) {
+                board.sections.forEach((section, sIndex) => {
+                    if (section.tasks.some(task => `task-${task._id}` === overId)) {
+                        targetSection = sIndex;
+                    }
+                });
+            }
+
+            if (sourceSection === -1 || targetSection === -1) return;
+
+            const sourceTasks = [...board.sections[sourceSection].tasks];
+            const targetTasks = [...board.sections[targetSection].tasks];
+            
+            
+            const activeTask = sourceTasks.findIndex(task => `task-${task._id}` === activeId);
+            const overTask = (sourceSection === targetSection
+                ? sourceTasks
+                : targetTasks
+            ).findIndex(task => `task-${task._id}` === overId);
+
+            const [movedTask] = sourceTasks.splice(activeTask, 1);
+
+            
+
+            if(sourceSection === targetSection){
+                // Moving task within the same section
+                sourceTasks.splice(overTask, 0, movedTask);
+                dispatch({
+                    type: 'REORDER_TASKS_WITHIN_SECTION',
+                    payload: {
+                    sectionIndex: sourceSection,
+                    newTasks: sourceTasks,
+                    }
+                });
+                refresh()
+            }else{
+                if (overId.startsWith('empty-placeholder-')) {
+                    targetTasks.unshift(movedTask);
+                } else {
+                    let overTask = targetTasks.findIndex(task => `task-${task._id}` === overId);
+                    targetTasks.splice(overTask, 0, movedTask);
+                }
+                dispatch({
+                    type: 'MOVE_TASK_BETWEEN_SECTIONS',
+                    payload: {
+                        sourceSectionIndex: sourceSection,
+                        targetSectionIndex: targetSection,
+                        sourceTasks: sourceTasks,
+                        targetTasks: targetTasks,
+                    },
+                });
+                refresh()
+            }
+        }
+
+        
+    }
+
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 8, 
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200, 
+                tolerance: 8,
+            },
         })
+    );
 
-        refresh()
+    function EmptyDropZone({ sectionId }) {
+        const { setNodeRef, isOver } = useDroppable({
+            id: `empty-placeholder-${sectionId}`,
+        });
+
+        return (
+            <div 
+                ref={setNodeRef}
+                className={`h-[55px] rounded-[5px] w-full border-2 border-dashed transition-colors ${
+                    isOver ? 'border-accent bg-primary/10' : 'border-primary/50'
+                }`}
+            >
+            </div>
+        );
     }
     
     return(
@@ -56,44 +180,90 @@ export default function Board({ board, dispatch }){
                 </div>
 
                 <div className="flex flex-row justify-baseline gap-4 mt-2 h-full">
-                    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+                    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
                         
-                         <SortableContext items={board.sections.map(section => section._id)} strategy={horizontalListSortingStrategy}>
+                         <SortableContext items={board.sections.map(section => `section-${section._id}`)} strategy={horizontalListSortingStrategy}>
 
                             {board.sections.map((section, section_index) => (
-                                console.log('SECTION ID: '+ section._id + ' INDEX: ' +section_index),
+                                
                                 <Section
                                     key={section._id}
-                                    id={section._id}
+                                    id={`section-${section._id}`}
                                     section_index={section_index}
                                     section_name={section.name}
                                     totalTask={section.tasks.length}
                                     dispatch={dispatch}
                                 >
-                                    {section.tasks.map((task, task_index) => (
-                                        <TaskCard 
-                                            key={task._id}
-                                            section_index={section_index}
-                                            task_index={task_index}
-                                            task_details={task}
-                                            board={board}
-                                            section_list={board.sections.map(section => section.name)}
-                                            className={'w-[250px]'}
-                                            onTaskDetail={() => {
-                                                setOpenTaskDetail(state => !state);
-                                                setTaskDetail({
-                                                    section_index: section_index,
-                                                    task_index: task_index,
-                                                })
-                                            }}
-                                            dispatch={dispatch}
-                                        />
-                                    ))} 
+                                    <SortableContext items={section.tasks.map(task => `task-${task._id}`)} strategy={verticalListSortingStrategy}>
+                                        {section.tasks.length > 0 
+                                            ? (
+                                                section.tasks.map((task, task_index) => (
+                                                 
+                                                    <TaskCard 
+                                                        key={task._id}
+                                                        id={`task-${task._id}`}
+                                                        section_index={section_index}
+                                                        task_index={task_index}
+                                                        task_details={task}
+                                                        board={board}
+                                                        section_list={board.sections.map(section => section.name)}
+                                                        className={'w-[250px]'}
+                                                        onTaskDetail={() => {
+                                                            setOpenTaskDetail(state => !state);
+                                                            setTaskDetail({
+                                                                section_index: section_index,
+                                                                task_index: task_index,
+                                                            })
+                                                        }}
+                                                        dispatch={dispatch}
+                                                    />
+                                                ))
+                                            )
+                                            : (  <EmptyDropZone sectionId={section._id} />
+                                            )
+                                        }
+                                        
+                                        
+                                        
+                                    </SortableContext>
                                 </Section>
                         ))}
 
                         </SortableContext>
-                        
+                        <DragOverlay>
+                            {activeDragItem?.startsWith('task-') && (() => {
+                                const taskId = activeDragItem.replace('task-', '');
+                                const task = board.sections.flatMap(s => s.tasks).find(t => t._id === taskId);
+
+                                if (!task) return null;
+
+                                return (
+                                <TaskCard
+                                    key={task._id}
+                                    id={`{task-${task._id}`}
+                                    task_details={task}
+                                    className="w-[250px] opacity-80 shadow-xl"
+                                    dragging
+                                />
+                                );
+                            })()}
+
+                            {activeDragItem?.startsWith('section-') && (() => {
+                                const sectionId = activeDragItem.replace('section-', '');
+                                const section = board.sections.find(s => s._id === sectionId);
+                                if (!section) return null;
+
+                                return (
+                                <Section
+                                    id={`section-${section._id}`}
+                                    section_name={section.name}
+                                    className="opacity-80 shadow-xl"
+                                    dragging
+                                    // Include any props that prevent side effects (e.g., no children/tasks)
+                                />
+                                );
+                            })()}
+                        </DragOverlay>
                     </DndContext>
                     
 

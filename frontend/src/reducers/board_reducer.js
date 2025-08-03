@@ -57,10 +57,48 @@ export const board_reducer = (state, action) => {
             }
         }
 
+        case 'REORDER_TASKS_WITHIN_SECTION':
+            const updatedSection = {
+                ...state.sections[action.payload.sectionIndex],
+                tasks: action.payload.newTasks,
+            };
+            return {
+                ...state,
+                sections: state.sections.map((section, index) =>
+                index === action.payload.sectionIndex ? updatedSection : section
+            )
+        };
+
+        case 'MOVE_TASK_BETWEEN_SECTIONS': {
+                const { sourceTasks, targetTasks, sourceSectionIndex, targetSectionIndex } = action.payload;
+                
+                const updatedSection = [...state.sections]
+                
+                updatedSection[sourceSectionIndex] = {
+                    ...updatedSection[sourceSectionIndex],
+                    tasks: sourceTasks
+                }
+
+                updatedSection[targetSectionIndex] = {
+                    ...updatedSection[targetSectionIndex],
+                    tasks: targetTasks
+                }
+                
+                return{
+                    ...state,
+                    sections: updatedSection
+                }
+
+        }
+        
+            
         case 'ADD_TASK': {
             const {section_index, name, position} = action.payload;
+            const id = new mongoose.Types.ObjectId()
+
             
             const newTask = {
+                _id: id,
                 task_name: name.trim() === '' ? 'New Task' : name,
                 checklist: []
             }

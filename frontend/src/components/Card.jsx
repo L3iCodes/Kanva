@@ -3,6 +3,8 @@ import ProgressBar from "./ProgressBar";
 import { CircleChevronDown, CircleChevronRight } from "lucide-react";
 import { TaskCardMenu } from "./Menus";
 import { useAuth } from "../../auth/AuthProvider";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function Card({ children, id, title = ' ', description = ' ', className, showProgressBar = false, onClick, enableMenu = false}){
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
@@ -160,7 +162,7 @@ export function LoadingCard({ length }){
     return <>{loadingCard}</>;
 }
 
-export function TaskCard({ section_index, task_index, task_details, section_list, dispatch, onTaskDetail, className}){
+export function TaskCard({ section_index, id, task_index, task_details, section_list, dispatch, onTaskDetail, className}){
     
     // Sub task toggle control
     const [toggleCheckList, setToggleCheckList] = useState(false)
@@ -170,7 +172,7 @@ export function TaskCard({ section_index, task_index, task_details, section_list
     const [toggleMoveMenu, setToggleMoveMenu] = useState(false)
 
     // Task Names
-    const [taskName, setTaskName] = useState(task_details.task_name)
+    const [taskName, setTaskName] = useState(!task_details ? '' : task_details.task_name)
     const [disableChangeName, setDisableChangeName] = useState(true)
     const taskNameRef = useRef(null)
 
@@ -199,10 +201,24 @@ export function TaskCard({ section_index, task_index, task_details, section_list
         })
     }
 
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+
     return(
         <>
-            <div className={`${className} flex flex-col gap-1`}>
+            <div 
+                ref={setNodeRef}
+                    style={style}
+                    {...attributes}
+                    {...listeners}
+                className={`${className} flex flex-col gap-1`}>
                 <div
+                    
                     onClick={onTaskDetail}
                     onMouseEnter={()=>setToggleTaskMenu(true)}
                     onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))} 
@@ -284,8 +300,6 @@ export function TaskCard({ section_index, task_index, task_details, section_list
                         ))}
                     </div>
                 )}
-
-                
             </div>
             
         </>

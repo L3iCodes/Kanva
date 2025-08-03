@@ -46,29 +46,19 @@ export default function Section( {section_index, id, section_name, totalTask, di
     }
 
     // For Drag Drop
-    const {attributes, listeners, transform, transition, setNodeRef} = useSortable({id})
+    const {attributes, listeners, transform, transition, setNodeRef, isDragging} = useSortable({id})
     const style = {
         transition,
-        transform: CSS.Transform.toString(transform)
+        transform: CSS.Transform.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
     }
 
     return(
         <>
             <div
-                ref={setNodeRef} {...attributes}
+                ref={setNodeRef} {...attributes} {...listeners}
                 style={style}
-                onPointerDown={(e) => {
-                    // Prevent dragging from buttons like menu or plus
-                    const target = e.target;
-                    if (
-                        target.closest('.no-drag') // any element with this class will NOT trigger drag
-                    ) {
-                        e.stopPropagation();
-                        return;
-                    }
-                    listeners.onPointerDown?.(e);
-                }}
-                className={`flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
+                className={`active:cursor-grabbing flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
                             transition-all ease-in duration-200
                             ${collapse ? `w-[50px]` : 'w-fit'}`}
             >
@@ -164,7 +154,7 @@ export default function Section( {section_index, id, section_name, totalTask, di
                 {!collapse && (
 
                     <div 
-                        className="flex flex-col h-full gap-2 overflow-y-auto">
+                        className="flex flex-col h-full gap-2">
                         
                         {addTaskTop && (
                             <div className={`no-drag flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
