@@ -194,7 +194,11 @@ export default function Board({ board, dispatch }){
                                     totalTask={section.tasks.length}
                                     dispatch={dispatch}
                                 >
-                                    <SortableContext items={section.tasks.map(task => `task-${task._id}`)} strategy={verticalListSortingStrategy}>
+                                    <SortableContext 
+                                        items={[
+                                            ...section.tasks.map(task => `task-${task._id}`)
+                                        ]} 
+                                        strategy={verticalListSortingStrategy}>
                                         {section.tasks.length > 0 
                                             ? (
                                                 section.tasks.map((task, task_index) => (
@@ -304,7 +308,9 @@ export default function Board({ board, dispatch }){
                                             })
 
                                             setToggleAddSection(false)
-                                            refresh();
+                                            setTimeout(() => {
+                                                refresh();
+                                            }, 0);
                                         }
                                     }}
                                 />
@@ -317,6 +323,10 @@ export default function Board({ board, dispatch }){
                                             })
 
                                             setToggleAddSection(false)
+                                            setToggleAddSection(false)
+                                            setTimeout(() => {
+                                                refresh();
+                                            }, 0);
                                         }} 
                                         className="w-[30px] p-1 hover:bg-accent rounded-[5px] cursor-pointer"/>
                                         
