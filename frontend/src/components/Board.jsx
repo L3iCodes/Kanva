@@ -44,7 +44,6 @@ export default function Board({ board, dispatch }){
 
             if (oldIndex !== -1 && newIndex !== -1){
                 const newSection = arrayMove(board.sections, oldIndex, newIndex)
-                console.log('NEW SECTION '+ JSON.stringify(newSection))
                 
                 dispatch({
                     type: 'REORDER_SECTION',
@@ -64,8 +63,6 @@ export default function Board({ board, dispatch }){
                 if (section.tasks.some(task => `task-${task._id}` === activeId)) {
                     sourceSection = sIndex;
                 }
-
-                
             });
 
             if (overId.startsWith('empty-placeholder-')) {
@@ -244,7 +241,6 @@ export default function Board({ board, dispatch }){
                             {activeDragItem?.startsWith('task-') && (() => {
                                 const taskId = activeDragItem.replace('task-', '');
                                 const task = board.sections.flatMap(s => s.tasks).find(t => t._id.toString() === taskId);
-                                console.log(task)
                                 if (!task) return null;
 
                                 return (
@@ -269,7 +265,6 @@ export default function Board({ board, dispatch }){
                                     section_name={section.name}
                                     className="opacity-80 shadow-xl"
                                     dragging
-                                    // Include any props that prevent side effects (e.g., no children/tasks)
                                 />
                                 );
                             })()}
