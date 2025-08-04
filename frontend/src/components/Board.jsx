@@ -2,11 +2,11 @@ import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
 import TaskDetail from "./TaskDetail"
 import { Plus, Check } from "lucide-react"
-import { act, useRef, useState } from "react"
+import { act, useRef, useState, useEffect } from "react"
 import { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { arrayMove, horizontalListSortingStrategy, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useAuth } from "../../auth/AuthProvider"
-import { version } from "react"
+
 
 export default function Board({ board, dispatch }){
     // Add Section Toggle
@@ -34,9 +34,6 @@ export default function Board({ board, dispatch }){
 
         const activeId = active.id.toString();
         const overId = over.id.toString();
-        console.log('DRAGSTART ' +activeId)
-        console.log('DRAGEND ' +overId)
-
 
         if (active.id === over.id) return;
         
@@ -73,7 +70,7 @@ export default function Board({ board, dispatch }){
 
             if (overId.startsWith('empty-placeholder-')) {
                 const targetSectionId = overId.replace('empty-placeholder-', '');
-                targetSection = board.sections.findIndex(section => section._id === targetSectionId);
+                targetSection = board.sections.findIndex(section => section._id.toString() === targetSectionId);
             } else if (overId.startsWith('task-')) {
                 board.sections.forEach((section, sIndex) => {
                     if (section.tasks.some(task => `task-${task._id}` === overId)) {
@@ -96,8 +93,6 @@ export default function Board({ board, dispatch }){
 
             const [movedTask] = sourceTasks.splice(activeTask, 1);
 
-            
-
             if(sourceSection === targetSection){
                 // Moving task within the same section
                 sourceTasks.splice(overTask, 0, movedTask);
@@ -108,9 +103,9 @@ export default function Board({ board, dispatch }){
                     newTasks: sourceTasks,
                     }
                 });
-                refresh()
+                
             }else{
-                if (overId.startsWith('empty-placeholder-')) {
+                if (overId.startsWith('empty-placeholder')) {
                     targetTasks.unshift(movedTask);
                 } else {
                     let overTask = targetTasks.findIndex(task => `task-${task._id}` === overId);
@@ -125,8 +120,8 @@ export default function Board({ board, dispatch }){
                         targetTasks: targetTasks,
                     },
                 });
-                refresh()
             }
+            refresh()
         }
 
         
@@ -161,6 +156,20 @@ export default function Board({ board, dispatch }){
             </div>
         );
     }
+
+    const handleAddSection = () => {
+        dispatch({
+            type: 'ADD_SECTION',
+            payload: { name: newSection }
+        });
+
+        setToggleAddSection(false);
+        setNewSection('');
+        
+        setTimeout(() => {
+            refresh();
+        }, 100);
+    };
     
     return(
         <>
@@ -195,14 +204,11 @@ export default function Board({ board, dispatch }){
                                     dispatch={dispatch}
                                 >
                                     <SortableContext 
-                                        items={[
-                                            ...section.tasks.map(task => `task-${task._id}`)
-                                        ]} 
+                                        items={section.tasks.map(task => `task-${task._id}`)}
                                         strategy={verticalListSortingStrategy}>
                                         {section.tasks.length > 0 
                                             ? (
                                                 section.tasks.map((task, task_index) => (
-                                                 
                                                     <TaskCard 
                                                         key={task._id}
                                                         id={`task-${task._id}`}
@@ -237,8 +243,8 @@ export default function Board({ board, dispatch }){
                         <DragOverlay>
                             {activeDragItem?.startsWith('task-') && (() => {
                                 const taskId = activeDragItem.replace('task-', '');
-                                const task = board.sections.flatMap(s => s.tasks).find(t => t._id === taskId);
-
+                                const task = board.sections.flatMap(s => s.tasks).find(t => t._id.toString() === taskId);
+                                console.log(task)
                                 if (!task) return null;
 
                                 return (
@@ -302,31 +308,14 @@ export default function Board({ board, dispatch }){
                                     }}
                                     onKeyDown={(e) => {
                                         if(e.key === 'Enter'){
-                                            dispatch({
-                                                type: 'ADD_SECTION',
-                                                payload: {name:newSection, position:'start'}
-                                            })
-
-                                            setToggleAddSection(false)
-                                            setTimeout(() => {
-                                                refresh();
-                                            }, 0);
+                                            handleAddSection()
                                         }
                                     }}
                                 />
                                 {newSection && (
                                     <Check
                                         onClick={()=>{
-                                            dispatch({
-                                                type: 'ADD_SECTION',
-                                                payload: { name:newSection }
-                                            })
-
-                                            setToggleAddSection(false)
-                                            setToggleAddSection(false)
-                                            setTimeout(() => {
-                                                refresh();
-                                            }, 0);
+                                           handleAddSection()
                                         }} 
                                         className="w-[30px] p-1 hover:bg-accent rounded-[5px] cursor-pointer"/>
                                         
