@@ -1,7 +1,7 @@
 import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
 import TaskDetail from "./TaskDetail"
-import { Plus, Check, Trash, Pen, ExternalLink } from "lucide-react"
+import { Plus, Check, Trash, Pen, ExternalLink, CircleUser } from "lucide-react"
 import { act, useRef, useState, useEffect } from "react"
 import { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { arrayMove, horizontalListSortingStrategy, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -53,7 +53,7 @@ export default function Board({ board, dispatch }){
             const filteredUsers = allUsers.filter(searched =>
                 !board.shared_user.some(sharedUser =>
                     (sharedUser._id || sharedUser.id || sharedUser) === searched._id
-                ) && user.id !== searched._id || user.username === 'admin'
+                ) && user.id !== searched._id && searched.username !== 'admin'
             );
 
             setSearchedUser(filteredUsers)
@@ -232,14 +232,16 @@ export default function Board({ board, dispatch }){
                                 }}
                             />
                             {openSearch && searchedUser.length > 0 && (
-                                <div className={`flex flex-col gap-1 p-2 w-[200px] bg-primary border-1 border-accent right-0 top-8 h-fit min-h-[20px] shadow-lg shadow-secondary/50 rounded-[5px] absolute
+                                <div className={`flex flex-col gap-1 p-2 w-[200px] bg-primary border-1 border-accent right-0 top-8 h-fit shadow-lg shadow-secondary/50 rounded-[5px] absolute
                                                 transition-all ease-in-out duration-900`}> 
                                     {searchedUser.map((element) => (
                                         <button 
                                             key={element._id}
-                                            className="text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"
-                                            
-                                            >{element.username}
+                                            className="flex items-center gap-2 px-2 py-1 text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"    
+                                        >
+                                            <CircleUser />
+                                            {element.username}
+
                                         </button>
                                     ))}
                                 </div>)}
