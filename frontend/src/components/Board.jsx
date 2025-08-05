@@ -1,7 +1,7 @@
 import Section from "./Section"
 import Card, { TaskCard, SubTaskCard } from "./Card"
 import TaskDetail from "./TaskDetail"
-import { Plus, Check } from "lucide-react"
+import { Plus, Check, Trash, Pen, ExternalLink } from "lucide-react"
 import { act, useRef, useState, useEffect } from "react"
 import { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { arrayMove, horizontalListSortingStrategy, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -9,18 +9,59 @@ import { useAuth } from "../../auth/AuthProvider"
 
 
 export default function Board({ board, dispatch }){
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
+    const { user } = useAuth()
+
     // Add Section Toggle
     const [toggleAddSection, setToggleAddSection] = useState(false)
     const [newSection, setNewSection] = useState('')
     const newSectionRef = useRef(null)
 
-    const { refresh } = useAuth()
+    const handleAddSection = () => {
+        dispatch({
+            type: 'ADD_SECTION',
+            payload: { name: newSection }
+        });
+
+        setToggleAddSection(false);
+        setNewSection('');
+    };
     
     // Open Task Detail Modal
     const [taskDetail, setTaskDetail] = useState({})
     const [openTaskDetail, setOpenTaskDetail] = useState(false)
     const [activeDragItem, setActiveDragItem] = useState(null);
 
+    // Open Search
+    const [openSearch, setOpenSearch] = useState(false)
+    const [searchedUser, setSearchedUser] = useState([])
+    const [search, setSearch] = useState('')
+    
+    const handleSearch = async (searchValue) => {
+        if (!searchValue.trim()){
+            setSearchedUser([])
+            setSearch('')
+            return;
+        } 
+
+        fetch(`${BACKEND_URL}/search/user?username=${encodeURIComponent(searchValue)}`, {
+            method: 'GET',
+        })
+        .then(res => res.json())
+        .then(data => {
+            const allUsers = data.list
+            const filteredUsers = allUsers.filter(searched =>
+                !board.shared_user.some(sharedUser =>
+                    (sharedUser._id || sharedUser.id || sharedUser) === searched._id
+                ) && user.id !== searched._id || user.username === 'admin'
+            );
+
+            setSearchedUser(filteredUsers)
+        })
+        .catch(err => console.log('Search error ' + err))
+    }
+
+    // Drag and Drop Functionality
     const handleDragStart = (event) => {
         const { active } = event;
         setActiveDragItem(active.id);
@@ -49,8 +90,6 @@ export default function Board({ board, dispatch }){
                     type: 'REORDER_SECTION',
                     payload: {newSection: newSection}
                 })
-
-                refresh()
             }
         }
 
@@ -118,10 +157,7 @@ export default function Board({ board, dispatch }){
                     },
                 });
             }
-            refresh()
         }
-
-        
     }
 
     const sensors = useSensors(
@@ -154,20 +190,6 @@ export default function Board({ board, dispatch }){
         );
     }
 
-    const handleAddSection = () => {
-        dispatch({
-            type: 'ADD_SECTION',
-            payload: { name: newSection }
-        });
-
-        setToggleAddSection(false);
-        setNewSection('');
-        
-        setTimeout(() => {
-            refresh();
-        }, 100);
-    };
-    
     return(
         <>
             <div className="flex flex-col gap-3 h-full w-full overflow-x-auto" >
@@ -177,11 +199,53 @@ export default function Board({ board, dispatch }){
                         task_detail={taskDetail}
                         board={board}
                         dispatch={dispatch}
-                        onTaskDetail={()=>setOpenTaskDetail(state => !state)}
+                        onTaskDetail={()=>{
+                            setOpenTaskDetail(state => !state)}}
                     />)}
                 
-                <div className="flex flex-col gap-2 w-full sticky left-0">
+                <div className="flex flex-row items-center gap-2 w-full sticky left-0 z-20">
                     <h1 className="text-2xl font-bold">{board.title}</h1>
+                    <div className="flex items-center gap-2"> |
+                        {/* <div title="Delete Board">
+                            <Trash className="w-[18px] text-secondary/50 cursor-pointer hover:text-secondary"/>        
+                        </div>
+                        <div title="Rename Board">
+                            <Pen className="w-[18px] text-secondary/50 cursor-pointer hover:text-secondary"/>   
+                        </div> */}
+                        <div title="Share Board" className="flex gap-2 relative z-30">
+                            <ExternalLink 
+                                onClick={() => {
+                                    setOpenSearch(state => !state);
+                                    setSearch('')
+                                }}
+                                className="w-[18px] text-secondary/50 cursor-pointer hover:text-secondary"/>   
+                            <input
+                                type="text"
+                                placeholder="Share with:"
+                                className={`text-[12px] border-1 border-secondary rounded-2xl
+                                            transition-all duration-300 ease-in
+                                            ${openSearch ? `w-[200px] px-2` : `w-[0px]` }`}
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value)
+                                    handleSearch(e.target.value)
+                                }}
+                            />
+                            {openSearch && searchedUser.length > 0 && (
+                                <div className={`flex flex-col gap-1 p-2 w-[200px] bg-primary border-1 border-accent right-0 top-8 h-fit min-h-[20px] shadow-lg shadow-secondary/50 rounded-[5px] absolute
+                                                transition-all ease-in-out duration-900`}> 
+                                    {searchedUser.map((element) => (
+                                        <button 
+                                            key={element._id}
+                                            className="text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"
+                                            
+                                            >{element.username}
+                                        </button>
+                                    ))}
+                                </div>)}
+                        </div>
+                        
+                    </div>
                     
                 </div>
 
@@ -220,6 +284,8 @@ export default function Board({ board, dispatch }){
                                                             setTaskDetail({
                                                                 section_index: section_index,
                                                                 task_index: task_index,
+                                                                section_list: board.sections.map(section => section.name),
+                                                                current_section: section_index
                                                             })
                                                         }}
                                                         dispatch={dispatch}

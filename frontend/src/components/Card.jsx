@@ -55,10 +55,8 @@ export default function Card({ children, id, title = ' ', description = ' ', cla
 
     const renameBoard = async (e) => {
         e.stopPropagation();
-        console.log('Renaming Board');
-
+ 
         try {
-            console.log('Entered')
             console.log(newDesc, newTitle)
             const response = await fetch(`${BACKEND_URL}/kanban/rename/${id}`, {
                 method: 'POST',
@@ -73,7 +71,6 @@ export default function Card({ children, id, title = ' ', description = ' ', cla
             });
 
             const data = await response.json();
-            console.log(data)
 
             if (response.ok) {
                 console.log(data.message);
@@ -222,7 +219,7 @@ export function TaskCard({ section_index, id, task_index, task_details, section_
                     onClick={onTaskDetail}
                     onMouseEnter={()=>setToggleTaskMenu(true)}
                     onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))} 
-                    className={`flex gap-3 flex-col bg-primary/80 rounded-[10px] text-secondary p-3 relative cursor-pointer
+                    className={`flex gap-3 flex-col bg-primary/80 rounded-[10px] text-secondary p-3 relative cursor-pointer active:cursor-grabbing 
                                 hover:border-1 border-accent`}
                 >
                     {toggleTaskMenu && (

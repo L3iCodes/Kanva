@@ -26,6 +26,7 @@ export default function KanbanPage(){
     // Update board data in the db
     useEffect(() => {
       if (!board) return;
+      console.log('BOARD UPDATE')
 
       fetch(`${BACKEND_URL}/update-board/${id}`, {
         method: 'PUT',

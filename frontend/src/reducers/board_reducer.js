@@ -152,6 +152,7 @@ export const board_reducer = (state, action) => {
         }
 
         case 'MOVE_TASK': {
+            console.log('MOVING')
             const { section_index, task_index, target_section } = action.payload;
 
             // Clone sections
@@ -159,18 +160,23 @@ export const board_reducer = (state, action) => {
 
             // Get the task
             const taskToMove = updatedSections[section_index].tasks[task_index];
+            console.log('Task to move ' + JSON.stringify(taskToMove))
 
             // Remove from original section
             updatedSections[section_index] = {
                 ...updatedSections[section_index],
                 tasks: updatedSections[section_index].tasks.filter((_, index) => index !== task_index)
             };
+            console.log('Updated Section (Remove) '+JSON.stringify(updatedSections))
 
             // Add to target section (append at the end)
             updatedSections[target_section] = {
                 ...updatedSections[target_section],
                 tasks: [...updatedSections[target_section].tasks, taskToMove]
             };
+
+            console.log('Updated Section (Moved) '+JSON.stringify(updatedSections))
+
 
             return {
                 ...state,

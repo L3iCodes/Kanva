@@ -121,7 +121,6 @@ export default function Section( {section_index, id, section_name, totalTask, di
                             </p>)
                     }
                     
-
                     <p className={`text-secondary/80 ${collapse && 'mt-9'}`}>{totalTask}</p>
 
                     {!collapse && (

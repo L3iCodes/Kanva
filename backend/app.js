@@ -298,5 +298,16 @@ app.post('/kanban/rename/:id', async (req, res) => {
         console.log('ERROR: ' + error)
         return res.status(401).json({success: false, message:'Connection Error'})
     }
+})
 
+app.get('/search/user', async (req, res) => {
+    const { username } = req.query;
+
+    const users = await User.find({
+        username: {$regex: `^${username}`, $options: 'i'}
+    })
+    .select('_id username')
+    .limit(10)
+
+    return res.status(201).json({list:users})
 })
