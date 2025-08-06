@@ -251,35 +251,59 @@ export default function Board({ board, dispatch }){
         })
     }
     
-    const [undo, setUndo] = useState(false)
-    const undoRef = useRef(false);
+    const [pendingDelete, setPendingDelete] = useState(null);
 
     const handleSectionDelete = async (section_index) => {
-        const deletedSection = board.sections[section_index]
-        board.sections.splice(section_index, 1)
-        undoRef.current = false;
-
-        await toggleFeedback(`Deleting [${deletedSection.name}]`)
+        const deletedSection = board.sections[section_index];
         
-        if(undoRef.current){
-            board.sections.splice(section_index, 0, deletedSection);
-            setUndo(false);
-            undoRef.current = false;
-        }else{
-            console.log('TIMER ENDED, DELETING')
-            // dispatch({
-            //     type: 'DELETE_SECTION',
-            //     payload: {section_index}
-            // })
+        setPendingDelete({
+            section: deletedSection,
+            index: section_index,
+            timestamp: Date.now()
+        });
+        
+        board.sections.splice(section_index, 1);
+        
+        // Show feedback with undo option
+        await toggleFeedback(`Deleting [${deletedSection.name}]`);
+        
+        // Check if undo was triggered during feedback
+        const currentPending = pendingDelete;
+        if (pendingDelete) {
+            // No undo was triggered, proceed with actual deletion
+            dispatch({
+                type: 'DELETE_SECTION',
+                payload: { section_index }
+            });
+            setPendingDelete(null);
         }
-    }
+    };
 
     const handleUndo = () => {
-        setUndo(true);
-        undoRef.current = true; 
+        if (pendingDelete) {
+            // Restore the section at its original position
+            board.sections.splice(pendingDelete.index, 0, pendingDelete.section);
+            setPendingDelete(null);
+            setOpenFeedback(false);
+        }
+    };
 
-        setOpenFeedback(false);
-    }
+    // Optional: Auto-cleanup pending deletes after a timeout
+    useEffect(() => {
+        if (pendingDelete) {
+            const timeout = setTimeout(() => {
+                if (pendingDelete) {
+                    dispatch({
+                        type: 'DELETE_SECTION',
+                        payload: { section_index: pendingDelete.index }
+                    });
+                    setPendingDelete(null);
+                }
+            }, 10000); // 10 second timeout
+            
+            return () => clearTimeout(timeout);
+        }
+    }, [pendingDelete, dispatch]);
 
     return(
         <>
