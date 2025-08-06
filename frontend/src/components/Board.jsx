@@ -41,6 +41,7 @@ export default function Board({ board, dispatch }){
     const [openFeedback, setOpenFeedback] = useState(false)
     const [feedbackTimer, setFeedbackTimer] = useState(null);
     const [feedbackMessage, setFeedbackMessage] = useState('')
+    const [feedbackResolve, setFeedbackResolve] = useState(null)
     
     const handleSearch = async (searchValue) => {
         if (!searchValue.trim()){
@@ -66,6 +67,8 @@ export default function Board({ board, dispatch }){
         .catch(err => console.log('Search error ' + err))
     }
 
+
+
     const handleInvite = async (receiver, type, boardId, boardName, index) => {
         fetch(`${BACKEND_URL}/invite/user`, {
             method: 'POST',
@@ -83,31 +86,12 @@ export default function Board({ board, dispatch }){
         .then(res => res.json())
         .then(data => {
             searchedUser.splice(index, 1)
-            setFeedbackMessage(`${data.message}`)
-            
-            setOpenFeedback(true)
-            
-            if (feedbackTimer) {
-                clearTimeout(feedbackTimer);
-            }
-            
-            // Set new timer
-            const timer = setTimeout(() => {
-                setOpenFeedback(false);
-            }, 3000);
-            
-            setFeedbackTimer(timer);
+            toggleFeedback(data.message)
         })
     }
     
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            if (feedbackTimer) {
-                clearTimeout(feedbackTimer);
-            }
-        };
-    }, [feedbackTimer]);
+
+ 
 
     // Drag and Drop Functionality
     const handleDragStart = (event) => {
@@ -237,6 +221,65 @@ export default function Board({ board, dispatch }){
             </div>
         );
     }
+    
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+            }
+        };
+    }, [feedbackTimer]);
+
+    const toggleFeedback = (message) => {
+        setFeedbackMessage(message)
+        setOpenFeedback(true)
+
+        if (feedbackTimer) {
+            clearTimeout(feedbackTimer);
+        }
+            
+        return new Promise((resolve) => {
+            // Set new timer
+            const timer = setTimeout(() => {
+                setOpenFeedback(false);
+                setFeedbackTimer(null);
+                resolve()
+            }, 3000);
+            
+            setFeedbackTimer(timer);
+        })
+    }
+    
+    const [undo, setUndo] = useState(false)
+    const undoRef = useRef(false);
+
+    const handleSectionDelete = async (section_index) => {
+        const deletedSection = board.sections[section_index]
+        board.sections.splice(section_index, 1)
+        undoRef.current = false;
+
+        await toggleFeedback(`Deleting [${deletedSection.name}]`)
+        
+        if(undoRef.current){
+            board.sections.splice(section_index, 0, deletedSection);
+            setUndo(false);
+            undoRef.current = false;
+        }else{
+            console.log('TIMER ENDED, DELETING')
+            // dispatch({
+            //     type: 'DELETE_SECTION',
+            //     payload: {section_index}
+            // })
+        }
+    }
+
+    const handleUndo = () => {
+        setUndo(true);
+        undoRef.current = true; 
+
+        setOpenFeedback(false);
+    }
 
     return(
         <>
@@ -251,7 +294,7 @@ export default function Board({ board, dispatch }){
                             setOpenTaskDetail(state => !state)}}
                     />)}
                 
-                <Feedback message={feedbackMessage} openFeedback={openFeedback}/>
+                <Feedback message={feedbackMessage} openFeedback={openFeedback} onUndo={handleUndo}/>
                 
                 <div className="flex flex-row items-center gap-2 w-full sticky left-0 z-20">
                     <h1 className="text-2xl font-bold">{board.title}</h1>
@@ -316,6 +359,7 @@ export default function Board({ board, dispatch }){
                                     section_name={section.name}
                                     totalTask={section.tasks.length}
                                     dispatch={dispatch}
+                                    onDelete={handleSectionDelete}
                                 >
                                     <SortableContext 
                                         items={section.tasks.map(task => `task-${task._id}`)}

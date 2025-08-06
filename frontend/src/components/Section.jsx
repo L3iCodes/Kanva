@@ -6,7 +6,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useAuth } from "../../auth/AuthProvider"
  
-export default function Section( {section_index, id, section_name, totalTask, dispatch, children}){    
+export default function Section( {section_index, id, section_name, totalTask, dispatch, onDelete, children}){    
     // Toggle Section Menu
     const [toggleSectionMenu, setToggleSectionMenu] = useState(false)
 
@@ -53,24 +53,34 @@ export default function Section( {section_index, id, section_name, totalTask, di
         opacity: isDragging ? 0.5 : 1,
     }
 
+    const handleDelete = async (section_index) => {
+        await openFeedback('Deleting')
+        
+        // dispatch({
+        //     type: 'DELETE_SECTION',
+        //     payload: {section_index}
+        // })
+    }
+
     return(
         <>
             <div
                 ref={setNodeRef} {...attributes} {...listeners}
                 style={style}
                 className={`active:cursor-grabbing flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
-                            transition-all ease-in duration-200 overflow-y-auto
-                            ${collapse ? `w-[50px]` : 'w-fit min-w-[260px]'}`}
+                            transition-all ease-in duration-200 
+                            ${collapse ? `w-[50px]` : 'w-fit '}`}
             >
                 {toggleSectionMenu && (
                     <SectionMenu
                         onCollapse={() => setCollapse(true)}
                         onRename={toggleRenameSection}
                         onDelete={() => {
-                            dispatch({
-                                type: 'DELETE_SECTION',
-                                payload: {section_index}
-                            })
+                            onDelete(section_index)
+                            // dispatch({
+                            //     type: 'DELETE_SECTION',
+                            //     payload: {section_index}
+                            // })
                         }}
                         onHandleToggleSection={() => setToggleSectionMenu(false)}
                         className={'no-drag'}
@@ -153,7 +163,7 @@ export default function Section( {section_index, id, section_name, totalTask, di
                 {!collapse && (
 
                     <div 
-                        className="flex flex-col h-full gap-2">
+                        className="flex flex-col h-[600px] gap-2 overflow-y-auto grow-0">
                         
                         {addTaskTop && (
                             <div className={`no-drag flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
