@@ -6,6 +6,7 @@ import { act, useRef, useState, useEffect } from "react"
 import { DndContext, closestCorners, MouseSensor, TouchSensor, useSensor, useSensors, DragOverlay, useDroppable } from '@dnd-kit/core'
 import { arrayMove, horizontalListSortingStrategy, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useAuth } from "../../auth/AuthProvider"
+import Feedback from "./Feedback"
 
 
 export default function Board({ board, dispatch }){
@@ -36,6 +37,10 @@ export default function Board({ board, dispatch }){
     const [openSearch, setOpenSearch] = useState(false)
     const [searchedUser, setSearchedUser] = useState([])
     const [search, setSearch] = useState('')
+
+    const [openFeedback, setOpenFeedback] = useState(false)
+    const [feedbackTimer, setFeedbackTimer] = useState(null);
+    const [feedbackMessage, setFeedbackMessage] = useState('')
     
     const handleSearch = async (searchValue) => {
         if (!searchValue.trim()){
@@ -61,7 +66,7 @@ export default function Board({ board, dispatch }){
         .catch(err => console.log('Search error ' + err))
     }
 
-    const handleInvite = async (receiver, type, boardId) => {
+    const handleInvite = async (receiver, type, boardId, boardName, index) => {
         fetch(`${BACKEND_URL}/invite/user`, {
             method: 'POST',
             headers: {
@@ -71,12 +76,38 @@ export default function Board({ board, dispatch }){
             body: JSON.stringify({
                 receiver,
                 type,
-                boardId
+                boardId,
+                boardName
             })
         })
         .then(res => res.json())
-        .then(data => console.log(data))
+        .then(data => {
+            searchedUser.splice(index, 1)
+            setFeedbackMessage(`${data.message}`)
+            
+            setOpenFeedback(true)
+            
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+            }
+            
+            // Set new timer
+            const timer = setTimeout(() => {
+                setOpenFeedback(false);
+            }, 3000);
+            
+            setFeedbackTimer(timer);
+        })
     }
+    
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+            }
+        };
+    }, [feedbackTimer]);
 
     // Drag and Drop Functionality
     const handleDragStart = (event) => {
@@ -220,6 +251,8 @@ export default function Board({ board, dispatch }){
                             setOpenTaskDetail(state => !state)}}
                     />)}
                 
+                <Feedback message={feedbackMessage} openFeedback={openFeedback}/>
+                
                 <div className="flex flex-row items-center gap-2 w-full sticky left-0 z-20">
                     <h1 className="text-2xl font-bold">{board.title}</h1>
                     <div className="flex items-center gap-2"> |
@@ -251,11 +284,11 @@ export default function Board({ board, dispatch }){
                             {openSearch && searchedUser.length > 0 && (
                                 <div className={`flex flex-col gap-1 p-2 w-[200px] bg-primary border-1 border-accent right-0 top-8 h-fit shadow-lg shadow-secondary/50 rounded-[5px] absolute
                                                 transition-all ease-in-out duration-900`}> 
-                                    {searchedUser.map((element) => (
+                                    {searchedUser.map((element, index) => (
                                         <button 
                                             key={element._id}
                                             className="flex items-center gap-2 px-2 py-1 text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"   
-                                            onClick={() => handleInvite(element._id, 'invite', board._id)} 
+                                            onClick={() => handleInvite(element._id, 'invite', board._id, board.title, index)} 
                                         >
                                             <CircleUser />
                                             {element.username}

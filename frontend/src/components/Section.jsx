@@ -59,8 +59,8 @@ export default function Section( {section_index, id, section_name, totalTask, di
                 ref={setNodeRef} {...attributes} {...listeners}
                 style={style}
                 className={`active:cursor-grabbing flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
-                            transition-all ease-in duration-200
-                            ${collapse ? `w-[50px]` : 'w-fit'}`}
+                            transition-all ease-in duration-200 overflow-y-auto
+                            ${collapse ? `w-[50px]` : 'w-fit min-w-[260px]'}`}
             >
                 {toggleSectionMenu && (
                     <SectionMenu

@@ -42,7 +42,6 @@ export default function BoardListPage(){
 
             if(response.ok){
                 const data = await response.json();
-                console.log(data)
                 
                 const fetchPersonalBoards = async () => {
                     if (data.personal_board.length > 0){
@@ -126,7 +125,7 @@ export default function BoardListPage(){
     return(
         <>
             <div 
-                className="pageWrapper text-secondary ">
+                className="pageWrapper text-secondary h-full">
                     
                 {/* Open Create Board Modal */}
                 <CreateBoard modalOpen={createOpen} onClose={() => setCreateOpen(false)} />

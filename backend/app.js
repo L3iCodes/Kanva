@@ -189,7 +189,6 @@ app.post('/kanban/create', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const boardData = req.body;
     const objectId = new mongoose.Types.ObjectId(userId)
-    console.log('Creating board for user ' + userId)
 
     try{
         const newBoard = new Board({
@@ -219,11 +218,9 @@ app.post('/kanban/create', authenticateToken, async (req, res) => {
 app.delete('/kanban/delete/:id', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const boardId = req.params.id;
-    console.log('Removing Board: '+boardId+' from User: ' + userId)
 
     try{
         const board = await Board.findById(boardId)
-        console.log('Found board:', board);
 
         if(!board){
             console.log('Board does not exists')
@@ -231,7 +228,6 @@ app.delete('/kanban/delete/:id', authenticateToken, async (req, res) => {
         }
 
         if(board.owner.toString() === userId){
-            console.log('User is owner - deleting entire board');
 
             await Promise.all([
                 // Remove board Id in owner
@@ -274,7 +270,6 @@ app.delete('/kanban/delete/:id', authenticateToken, async (req, res) => {
 app.post('/kanban/rename/:id', async (req, res) => {
     const boardId = req.params.id;
     const {newTitle, newDesc} = req.body;
-    console.log(newTitle, newDesc)
     
     try{
         const board = await Board.findById(boardId);
@@ -314,12 +309,13 @@ app.get('/search/user', async (req, res) => {
 
 app.post('/invite/user', authenticateToken, async (req, res) => {
     const senderUsername = req.user.username;
-    const { receiver, type, boardId } = req.body;
+    const { receiver, type, boardId, boardName } = req.body;
     const newMessage = {
         sender: senderUsername,
         receiver: receiver,
         type: type,
-        boardId: boardId
+        boardId: boardId,
+        boardName: boardName
     }
 
     try{

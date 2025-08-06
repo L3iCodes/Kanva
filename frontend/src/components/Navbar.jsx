@@ -1,9 +1,13 @@
 import { ChevronDown, ChevronUp, House, Kanban, MoonStar, SunMedium, LogOut, LogIn  } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthProvider';
 
 function Navbar(){
+    const location = useLocation();
+    const currentPath = location.pathname;
+    console.log(currentPath)
+
     // Navbar Controls
     const [navbarOpen, setNavbarOpen] = useState(false)
     const {user, logout} = useAuth();
@@ -46,8 +50,16 @@ function Navbar(){
                                 ${navbarOpen ? 'flex' : 'hidden'}`}
                 >
 
-                    <div onClick={() => navigate(`/`)} title='Home'><House className='icon' /></div>
-                    <div onClick={() => navigate(`/board-list`)} title='Kanban'><Kanban className='icon'/></div>
+                    <div 
+                        onClick={() => navigate(`/`)} 
+                        title='Home'>
+                            <House className={`icon ${currentPath === '/' && ('bg-accent')}`} />
+                    </div>
+                    <div 
+                        onClick={() => navigate(`/board-list`)} 
+                        title='Kanban'>
+                            <Kanban className={`icon ${(currentPath === '/board-list' || currentPath.startsWith('/kanban')) && 'bg-accent'}`}/>
+                    </div>
                     
                 </div>
                 

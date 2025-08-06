@@ -5,6 +5,7 @@ const RequestSchema = new mongoose.Schema({
     receiver: mongoose.Schema.Types.ObjectId,
     type: String,
     boardId: mongoose.Schema.Types.ObjectId,
+    boardName: String
 })
 
 const UserSchema = new mongoose.Schema({

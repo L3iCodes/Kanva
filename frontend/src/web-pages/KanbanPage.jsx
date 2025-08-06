@@ -41,7 +41,7 @@ export default function KanbanPage(){
 
     return(
         <>
-            <div className="pageWrapper !h-full !w-full text-secondary">
+            <div className="p-4 !h-full !w-full text-secondary">
                 {board && (
                   <Board board={board} dispatch={dispatch}/>
                 )}
