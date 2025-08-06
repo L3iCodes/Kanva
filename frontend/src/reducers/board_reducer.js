@@ -177,7 +177,6 @@ export const board_reducer = (state, action) => {
 
             console.log('Updated Section (Moved) '+JSON.stringify(updatedSections))
 
-
             return {
                 ...state,
                 sections: updatedSections

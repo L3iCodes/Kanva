@@ -10,7 +10,7 @@ import { useAuth } from "../../auth/AuthProvider"
 
 export default function Board({ board, dispatch }){
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
-    const { user } = useAuth()
+    const { user, token } = useAuth()
 
     // Add Section Toggle
     const [toggleAddSection, setToggleAddSection] = useState(false)
@@ -59,6 +59,23 @@ export default function Board({ board, dispatch }){
             setSearchedUser(filteredUsers)
         })
         .catch(err => console.log('Search error ' + err))
+    }
+
+    const handleInvite = async (receiver, type, boardId) => {
+        fetch(`${BACKEND_URL}/invite/user`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                receiver,
+                type,
+                boardId
+            })
+        })
+        .then(res => res.json())
+        .then(data => console.log(data))
     }
 
     // Drag and Drop Functionality
@@ -237,7 +254,8 @@ export default function Board({ board, dispatch }){
                                     {searchedUser.map((element) => (
                                         <button 
                                             key={element._id}
-                                            className="flex items-center gap-2 px-2 py-1 text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"    
+                                            className="flex items-center gap-2 px-2 py-1 text-[12px] align-baseline hover:bg-accent cursor-pointer rounded-[2px]"   
+                                            onClick={() => handleInvite(element._id, 'invite', board._id)} 
                                         >
                                             <CircleUser />
                                             {element.username}

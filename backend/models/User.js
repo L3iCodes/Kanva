@@ -1,4 +1,11 @@
-import mongoose from "mongoose"
+import mongoose, { mongo } from "mongoose"
+
+const RequestSchema = new mongoose.Schema({
+    sender: String,
+    receiver: mongoose.Schema.Types.ObjectId,
+    type: String,
+    boardId: mongoose.Schema.Types.ObjectId,
+})
 
 const UserSchema = new mongoose.Schema({
     username: String,
@@ -10,6 +17,7 @@ const UserSchema = new mongoose.Schema({
      shared_board: [{
         type: mongoose.Schema.Types.ObjectId,
     }],
+    messages: [RequestSchema]
 })
 
 export default mongoose.models.User || mongoose.model('users', UserSchema)

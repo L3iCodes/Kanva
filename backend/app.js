@@ -39,7 +39,7 @@ app.get(`/kanban/:id`, async (req, res) => {
 
     try{
         const board = await Board.findById(id);
-        res.json({success: true, board:board});
+        return res.json({success: true, board:board});
     }catch(error){
         console.error(`Can't find user with ID: ${id} \n Error: ${error}`);
     }
@@ -57,10 +57,10 @@ app.put(`/update-board/:id`, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Board not found' });
         }
         
-        res.status(201).json({ success: true, board: updated });
+        return res.status(201).json({ success: true, board: updated });
     }catch(error){
         console.error(`Error updating board ${id}:`, error);
-        res.status(404).json({ success: false, board: updated });
+        return res.status(404).json({ success: false, board: updated });
     }
 })
 
@@ -310,4 +310,92 @@ app.get('/search/user', async (req, res) => {
     .limit(10)
 
     return res.status(201).json({list:users})
+});
+
+app.post('/invite/user', authenticateToken, async (req, res) => {
+    const senderUsername = req.user.username;
+    const { receiver, type, boardId } = req.body;
+    const newMessage = {
+        sender: senderUsername,
+        receiver: receiver,
+        type: type,
+        boardId: boardId
+    }
+
+    try{
+        const user = await User.findById(receiver)
+
+        if(user.messages.some(message => message.boardId.toString() === boardId)){
+            return res.status(409).json({success: false, message: `${type} already sent to the user`})
+        }else{
+            await User.findByIdAndUpdate(
+                receiver,
+                { $push: {messages: newMessage}}
+            );
+
+            return res.status(202).json({success: true, message: `${type} sent`})
+        }
+
+    }catch(error){
+        console.log(`${type} failed - ERROR: ${error}`)
+        return res.status(400).json({success: false, message: `Failed to send ${type}`})
+    }
+})
+
+app.get('/retrieve/messages', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+
+    try{
+        const messages = await User.findById(userId).select('messages')
+        return res.status(201).json({success: true, message_list:messages})
+    }catch(error){
+        console.log('Failed to retrieve messages, ERROR: ' + error)
+        return res.status(401).json({success: false, message_list:[]})
+    }
+    
+})
+
+app.post('/message/response', authenticateToken, async (req, res) => {
+    const userId = req.user.userId
+    const {response, message} = req.body;
+
+    try{
+        const isBoard = await Board.findById(message.boardId)
+        
+        if(!isBoard || response === 'reject'){
+            await User.findByIdAndUpdate(
+                userId,
+                { $pull: { messages: {_id: message._id} } },
+                { new: true} 
+            );
+            
+            if(!isBoard){
+                return res.status(201).json({success: false, message: 'Board does not exists anymore'})
+            }
+
+            return res.status(201).json({success: true, message: `${message.type} rejected`})
+        }else{
+            await User.findByIdAndUpdate(
+                userId,
+                { 
+                    $pull: { messages: {_id: message._id} },
+                    $push: { shared_board: message.boardId }
+                },
+                { new: true }
+            );
+
+            await Board.findByIdAndUpdate(
+                message.boardId,
+                { $push: { shared_user: userId } },
+                { new: true} 
+            );
+
+            return res.status(201).json({success: true, message: `${message.type} accepted`})
+        }
+
+    }catch(error){
+        console.log(error)
+        return res.status(401).json({success: false, message: `Failed to respond to message ${error}`})
+
+    }
 })
