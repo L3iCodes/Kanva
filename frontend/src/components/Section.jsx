@@ -70,6 +70,7 @@ export default function Section( {section_index, id, section_name, totalTask, di
                 className={`active:cursor-grabbing flex flex-col h-full grow-0 bg-secondary/30 rounded-[5px] p-1 text-primary relative
                             transition-all ease-in duration-200 
                             ${collapse ? `w-[50px]` : 'w-fit '}`}
+                onMouseLeave={() => setToggleSectionMenu(false)} 
             >
                 {toggleSectionMenu && (
                     <SectionMenu
@@ -166,7 +167,9 @@ export default function Section( {section_index, id, section_name, totalTask, di
                         className="flex flex-col h-[600px] gap-2 overflow-y-auto grow-0">
                         
                         {addTaskTop && (
-                            <div className={`no-drag flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
+                            <div 
+                                onMouseLeave={() => setAddTaskTop(false)}
+                                className={`no-drag flex w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]`}>
                                 <input 
                                     type="text"
                                     ref={inputStart} 
@@ -177,6 +180,7 @@ export default function Section( {section_index, id, section_name, totalTask, di
                                         setNewTask(e.target.value)
                                     }}
                                     onKeyDown={(e) => e.key==='Enter' && addTask('start')}
+                                    
                                 />
                                 <button
                                     onClick={() => addTask('start')} 
@@ -189,7 +193,9 @@ export default function Section( {section_index, id, section_name, totalTask, di
                         
                         {children}
 
-                        <div className={`w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]
+                        <div
+                            onMouseLeave={() => setAddTaskBot(false)} 
+                            className={`w-[250px] h-fit border-2 border-accent py-1 px-1 bg-primary rounded-[5px] text-secondary text-[12px]
                                         ${addTaskBot ? 'flex' : 'hidden'}`}>
                             <input 
                                 type="text"
@@ -224,7 +230,7 @@ export default function Section( {section_index, id, section_name, totalTask, di
                             className={`no-drag flex flex-row justify-start w-[250px] bg-primary/0 text-secondary/80 text-[12px] p-1 cursor-pointer
                                         hover:bg-primary/90`}
                         >
-                            { addTaskBot ? `Close`  :  `+ Add Task`}
+                            { addTaskBot ? ``  :  `+ Add Task`}
                         </button>
                        
                     </div>

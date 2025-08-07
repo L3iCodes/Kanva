@@ -479,9 +479,10 @@ export default function Board({ board, dispatch }){
                         {toggleAddSection && (
                             <div className="flex items-center gap-2 border-accent border-2 p-1 rounded-[5px]">
                                 <input 
+                                    onMouseLeave={() => setToggleAddSection(false)}
                                     type="text"
                                     ref={newSectionRef}
-                                    placeholder="Task Name"
+                                    placeholder="Section Name"
                                     className="w-full"
                                     value={newSection}
                                     onChange={(e) => {
