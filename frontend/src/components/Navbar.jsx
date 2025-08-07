@@ -49,17 +49,20 @@ function Navbar(){
                 <div className={`md:flex flex-col items-center gap-3
                                 ${navbarOpen ? 'flex' : 'hidden'}`}
                 >
-
-                    <div 
-                        onClick={() => navigate(`/`)} 
-                        title='Home'>
-                            <House className={`icon ${currentPath === '/' && ('bg-accent')}`} />
-                    </div>
-                    <div 
-                        onClick={() => navigate(`/board-list`)} 
-                        title='Kanban'>
-                            <Kanban className={`icon ${(currentPath === '/board-list' || currentPath.startsWith('/kanban')) && 'bg-accent'}`}/>
-                    </div>
+                    {user 
+                        ?(
+                            <div 
+                                onClick={() => navigate(`/board-list`)} 
+                                title='Kanban'>
+                                <Kanban className={`icon ${(currentPath === '/board-list' || currentPath.startsWith('/kanban')) && 'bg-accent'}`}/>
+                            </div>)
+                        : (
+                            <div 
+                                onClick={() => navigate(`/`)} 
+                                title='Home'>
+                                    <House className={`icon ${currentPath === '/' && ('bg-accent')}`} />
+                            </div>
+                        )}
                     
                 </div>
                 
@@ -83,7 +86,14 @@ function Navbar(){
                         />
                     )}
                     {user 
-                        ? (<div onClick={logout} title='Logout'><LogOut className='icon'/></div>) 
+                        ? (<div 
+                                onClick={() => {
+                                    logout();
+                                    navigate(`/`);
+                                }} 
+                                title='Logout'>
+                                    <LogOut className='icon'/>
+                            </div>) 
                         : (<div onClick={() => navigate('/login')} title='Login'><LogIn className='icon'/></div>)}
                     
                 </div>

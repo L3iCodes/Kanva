@@ -30,7 +30,7 @@ export default function LoginPage(){
 
         if(result.success){
             setMessage({ message: 'Login successful!', success: true });
-            navigate('/')
+            navigate('/board-list')
         }else{
             setMessage({ message: result.message, success: false });
         }

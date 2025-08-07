@@ -5,6 +5,7 @@ import CreateBoard from "../components/CreateBoard"
 import { Navigate, useNavigate } from "react-router-dom"
 import { useAuth } from "../../auth/AuthProvider"
 import { TaskCardMenu } from "../components/Menus"
+import Feedback from "../components/Feedback"
 
 
 export default function BoardListPage(){
@@ -119,7 +120,6 @@ export default function BoardListPage(){
 
         fetchPersonalBoards()
     }, [])
-
 
 
     return(

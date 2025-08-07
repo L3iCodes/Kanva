@@ -9,6 +9,7 @@ import { CSS } from "@dnd-kit/utilities";
 export default function Card({ children, id, title = ' ', description = ' ', className, showProgressBar = false, onClick, enableMenu = false}){
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://localhost:5000`;
     const [toggleMenu, setToggleMenu] = useState(false)
+    const [toggleConfirmation, setToggleConfirmation] = useState(false)
     const [disablEdit, setDisableEdit] = useState(true)
     const {token, refresh} = useAuth()
     const [newTitle, setNewTitle] = useState(title)
@@ -88,12 +89,26 @@ export default function Card({ children, id, title = ' ', description = ' ', cla
             <div 
                 onClick={onClick}
                 onMouseEnter={() => setToggleMenu(true)}
-                onMouseLeave={() => setToggleMenu(false)}
+                onMouseLeave={() => {
+                    setToggleMenu(false)
+                    setToggleConfirmation(false)
+                }}
                 className={`${className} flex gap-2 flex-col h-[200px] bg-secondary/90 rounded-[10px] text-primary p-3 cursor-pointer relative
                             md:h-[250px]
                             hover:bg-secondary`}
             >
-
+                {toggleConfirmation && (
+                    <div className="flex flex-col absolute right-1 top-10 bg-primary w-[150px] text-secondary p-1 rounded-[5px] shadow-lg shadow-secondary">
+                        <p>Do you want to delete this board?</p>
+                        <button
+                            onClick={(e) => deleteBoard(id, e)} 
+                            className="text-[12px] bg-red-500 w-fit ml-auto text-white px-2 cursor-pointer hover:bg-red-600 " >
+                                Confirm
+                            </button>
+                    </div>
+                )}
+                
+                
                 <textarea
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => setNewTitle(e.target.value)}
@@ -135,7 +150,10 @@ export default function Card({ children, id, title = ' ', description = ' ', cla
                 {toggleMenu && enableMenu &&
                 
                     (<TaskCardMenu 
-                        onRemove={(e) => deleteBoard(id, e)}
+                        onRemove={(e) => {
+                            e.stopPropagation()
+                            setToggleConfirmation(s => !s)
+                        }}
                         onToggleRename={(e) => toggleRename(e)}
                     />)
                 }
@@ -218,7 +236,8 @@ export function TaskCard({ section_index, id, task_index, task_details, section_
                     
                     onClick={onTaskDetail}
                     onMouseEnter={()=>setToggleTaskMenu(true)}
-                    onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))} 
+                    onMouseLeave={()=>(setToggleTaskMenu(false), setToggleMoveMenu(false))}
+                    onMouseOver={()=> setToggleTaskMenu(true)} 
                     className={`flex gap-3 flex-col bg-primary/80 rounded-[10px] text-secondary p-3 relative cursor-pointer active:cursor-grabbing 
                                 hover:border-1 border-accent`}
                 >

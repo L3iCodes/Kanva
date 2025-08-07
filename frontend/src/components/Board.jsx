@@ -268,7 +268,6 @@ export default function Board({ board, dispatch }){
         await toggleFeedback(`Deleting [${deletedSection.name}]`);
         
         // Check if undo was triggered during feedback
-        const currentPending = pendingDelete;
         if (pendingDelete) {
             // No undo was triggered, proceed with actual deletion
             dispatch({
