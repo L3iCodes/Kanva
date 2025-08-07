@@ -93,7 +93,7 @@ export default function Header(){
                         <p className='text-[12px] min-w-[50px] truncate'>{user.username}</p>
                         
                         {openMessage && (
-                            <div className='flex flex-col gap-2 w-[300px] bg-primary absolute text-secondary top-11 border-1 border-secondary/80 shadow-lg shadow-secondary rounded-[5px]'>
+                            <div className='flex flex-col gap-2 w-[300px] bg-primary absolute text-secondary top-11 border-1 border-secondary/80 shadow-lg shadow-secondary rounded-[5px] z-10'>
                                 <p className='!text-[15px] m-1'>Notifications</p>
                                 
                                 {messageList && messageList.map((message, index) => (

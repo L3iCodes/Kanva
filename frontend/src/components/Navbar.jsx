@@ -6,7 +6,6 @@ import { useAuth } from '../../auth/AuthProvider';
 function Navbar(){
     const location = useLocation();
     const currentPath = location.pathname;
-    console.log(currentPath)
 
     // Navbar Controls
     const [navbarOpen, setNavbarOpen] = useState(false)
